@@ -1,6 +1,72 @@
+"use client";
+
+import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { Modal, Button } from "flowbite-react";
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const [showModal, setShowModal] = useState(false);
+  const [timer, setTimer] = useState(120); // 2 minutes in seconds
+  const inactivityTimeout = useRef<NodeJS.Timeout | null>(null);
+  const countdownInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Reset inactivity timer
+  const resetInactivityTimer = () => {
+    if (inactivityTimeout.current) clearTimeout(inactivityTimeout.current);
+    if (countdownInterval.current) clearInterval(countdownInterval.current);
+    setShowModal(false);
+    setTimer(120);
+    inactivityTimeout.current = setTimeout(() => {
+      setShowModal(true);
+      setTimer(120);
+      countdownInterval.current = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }, 1 * 60 * 1000); // 1 minute
+  };
+
+  // Handle user activity
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    resetInactivityTimer();
+    const events = ["mousedown", "touchstart", "scroll"];
+    const handleActivity = resetInactivityTimer;
+    events.forEach((event) => window.addEventListener(event, handleActivity));
+    return () => {
+      if (inactivityTimeout.current) clearTimeout(inactivityTimeout.current);
+      if (countdownInterval.current) clearInterval(countdownInterval.current);
+      events.forEach((event) =>
+        window.removeEventListener(event, handleActivity)
+      );
+    };
+  }, [status]);
+
+  // Handle timer countdown and auto-logout
+  useEffect(() => {
+    if (!showModal) return;
+    if (timer <= 0) {
+      if (countdownInterval.current) clearInterval(countdownInterval.current);
+      setShowModal(false);
+      signOut({ callbackUrl: "/login" });
+    }
+  }, [timer, showModal]);
+
+  const handleYes = () => {
+    setShowModal(false);
+    setTimer(120);
+    resetInactivityTimer();
+    if (countdownInterval.current) clearInterval(countdownInterval.current);
+  };
+
+  const handleNo = () => {
+    setShowModal(false);
+    if (countdownInterval.current) clearInterval(countdownInterval.current);
+    signOut({ callbackUrl: "/login" });
+  };
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -12,92 +78,56 @@ export default function Home() {
           height={38}
           priority
         />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+        {status === "loading" && <p>Loading...</p>}
+
+        {status === "authenticated" && (
+          <div>
+            <p className="text-center sm:text-left">
+              Signed in as {session.user?.name}
+            </p>
+            <button
+              onClick={() => signOut()}
+              className="mt-4 rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto cursor-pointer"
+            >
+              Sign out
+            </button>
+          </div>
+        )}
+
+        {status === "unauthenticated" && (
+          <div>
+            <p className="text-center sm:text-left">Not signed in</p>
+            <Link href="/login">
+              <span className="mt-4 rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto cursor-pointer">
+                Sign in
+              </span>
+            </Link>
+          </div>
+        )}
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+        <p>Authentication example</p>
       </footer>
+      <Modal show={showModal} onClose={handleNo} size="md" popup>
+        <div className="text-center p-6">
+          <h3 className="mb-4 text-lg font-normal text-gray-700 dark:text-gray-200">
+            Are you there?
+          </h3>
+          <p className="mb-4 text-gray-500 dark:text-gray-400">
+            You will be logged out in <span className="font-bold">{timer}</span>{" "}
+            seconds.
+          </p>
+          <div className="flex justify-center gap-4">
+            <Button color="success" onClick={handleYes}>
+              Yes
+            </Button>
+            <Button color="failure" onClick={handleNo}>
+              No
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
