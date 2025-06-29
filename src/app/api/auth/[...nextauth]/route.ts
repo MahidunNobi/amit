@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import GoogleProvider from "next-auth/providers/google";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import clientPromise from "@/lib/mongodb";
+import { v4 as uuidv4 } from "uuid";
 
 export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
@@ -23,6 +24,11 @@ export const authOptions: AuthOptions = {
         }
         await dbConnect();
         const user = await User.findOne({ email: credentials.email });
+        // Creating a new token and saving it to DB.
+        const sessionToken = uuidv4();
+        user.activeSessionToken = sessionToken;
+        await user.save();
+
         if (
           user &&
           (await bcrypt.compare(credentials.password, user.password))
@@ -31,6 +37,7 @@ export const authOptions: AuthOptions = {
             id: user._id.toString(),
             email: user.email,
             name: `${user.firstName} ${user.lastName}`,
+            sessionToken,
           };
         }
 
@@ -46,6 +53,7 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.name = user.name;
+        token.sessionToken = user.sessionToken;
       }
 
       return token;
@@ -53,6 +61,7 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.name = token.name as string;
+        session.sessionToken = token.sessionToken;
       }
       return session;
     },

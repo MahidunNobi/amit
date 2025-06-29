@@ -1,25 +1,26 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema({
   email: {
     type: String,
-    required: [true, 'Please provide an email.'],
+    required: [true, "Please provide an email."],
     unique: true,
   },
   password: {
     type: String,
-    required: [true, 'Please provide a password.'],
+    required: [true, "Please provide a password."],
   },
   firstName: {
     type: String,
-    required: [true, 'Please provide a first name.'],
+    required: [true, "Please provide a first name."],
   },
   lastName: {
     type: String,
-    required: [true, 'Please provide a last name.'],
+    required: [true, "Please provide a last name."],
   },
   resetPasswordToken: String,
   resetPasswordExpires: Date,
+  activeSessionToken: String,
 });
 
-export default mongoose.models.User || mongoose.model('User', UserSchema); 
+export default mongoose.models.User || mongoose.model("User", UserSchema);
