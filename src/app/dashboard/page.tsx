@@ -1,10 +1,7 @@
-import { validateSession } from "@/actions/validateSession";
-import React from "react";
+import { validateSession } from '@/actions/validateSession';
+import Dashboard from '@/components/Dashboard';
 
-const DashboardPage = async () => {
-  const res = await validateSession();
-
-  return <div>Dashboard Page</div>;
-};
-
-export default DashboardPage;
+export default async function DashboardPage() {
+  await validateSession();
+  return <Dashboard />;
+}
