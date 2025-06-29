@@ -11,7 +11,7 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ label = 'Sign i
   <Button
     color="light"
     className="w-full mb-4 flex items-center justify-center gap-2 cursor-pointer"
-    onClick={() => signIn('google', { callbackUrl: '/' })}
+    onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
   >
     <FaGoogle className="text-lg" /> {label}
   </Button>
