@@ -12,14 +12,14 @@ export async function validateSession() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/api/auth/signin");
+    redirect("/login");
   }
 
   await dbConnect();
   const user = await User.findOne({ email: session.user.email });
 
   if (!user || user.activeSessionToken !== session.sessionToken) {
-    redirect("/api/auth/signout?callbackUrl=/api/auth/signin&redirect=true");
+    redirect("/signout");
   }
 
   return session;
