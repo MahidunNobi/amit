@@ -9,6 +9,33 @@ import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import clientPromise from "@/lib/mongodb";
 import { v4 as uuidv4 } from "uuid";
 
+// Extend the session type to include custom properties
+declare module "next-auth" {
+  interface Session {
+    user: {
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+    sessionToken?: string;
+  }
+  
+  interface User {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    sessionToken?: string;
+  }
+}
+
+// Extend JWT type to include sessionToken
+declare module "next-auth/jwt" {
+  interface JWT {
+    sessionToken?: string;
+  }
+}
+
 export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(clientPromise),
   providers: [
@@ -24,15 +51,16 @@ export const authOptions: AuthOptions = {
         }
         await dbConnect();
         const user = await User.findOne({ email: credentials.email });
-        // Creating a new token and saving it to DB.
-        const sessionToken = uuidv4();
-        user.activeSessionToken = sessionToken;
-        await user.save();
-
+        
         if (
           user &&
           (await bcrypt.compare(credentials.password, user.password))
         ) {
+          // Creating a new token and saving it to DB.
+          const sessionToken = uuidv4();
+          user.activeSessionToken = sessionToken;
+          await user.save();
+
           return {
             id: user._id.toString(),
             email: user.email,
@@ -76,11 +104,17 @@ export const authOptions: AuthOptions = {
   events: {
     async signOut({ token }) {
       if (token?.sub) {
+        try {
+          await dbConnect();
+          // Clear the active session token when user signs out
+          await User.findByIdAndUpdate(token.sub, { activeSessionToken: null });
+        } catch (error) {
+          console.error("Error clearing session token:", error);
+        }
       }
     },
   },
 };
 
 const handler = NextAuth(authOptions);
-
 export { handler as GET, handler as POST };
