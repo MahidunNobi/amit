@@ -18,9 +18,12 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please provide a last name."],
   },
+  activeSessionToken: {
+    type: String,
+    default: null,
+  },
   resetPasswordToken: String,
   resetPasswordExpires: Date,
-  activeSessionToken: String,
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);
