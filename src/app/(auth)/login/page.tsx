@@ -26,6 +26,7 @@ export default function LoginPage() {
         redirect: false,
         email,
         password,
+        accountType: "company",
       });
       
       if (result?.error) {
