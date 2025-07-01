@@ -8,6 +8,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import clientPromise from "@/lib/mongodb";
 import { v4 as uuidv4 } from "uuid";
+import CompanyUser from "@/models/CompanyUser";
 
 // Extend the session type to include custom properties
 declare module "next-auth" {
@@ -47,29 +48,35 @@ export const authOptions: AuthOptions = {
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
-      },
+        accountType: { label: "Account Type", type: "text" },
+      },  
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
         await dbConnect();
-        const company = await Company.findOne({ email: credentials.email });
-        
+        let account;
+        if(credentials.accountType === "company"){
+          account = await Company.findOne({ email: credentials.email });
+        }else if(credentials.accountType === "user"){
+          account = await CompanyUser.findOne({ email: credentials.email });
+        }
+
         if (
-          company &&
-          (await bcrypt.compare(credentials.password, company.password))
+          account &&
+          (await bcrypt.compare(credentials.password, account.password))
         ) {
           // Creating a new token and saving it to DB.
           const sessionToken = uuidv4();
-          company.activeSessionToken = sessionToken;
-          await company.save();
+          account.activeSessionToken = sessionToken;
+          await account.save();
 
           return {
-            id: company._id.toString(),
-            email: company.email,
-            name: company.companyName,
+            id: account._id.toString(),
+            email: account.email,
+            name: account.accountName,
             sessionToken,
-            accountType: company.accountType,
+            accountType: account.accountType,
           };
         }
 
@@ -113,7 +120,11 @@ export const authOptions: AuthOptions = {
         try {
           await dbConnect();
           // Clear the active session token when user signs out
-          await Company.findByIdAndUpdate(token.sub, { activeSessionToken: null });
+          if(token.accountType === "company"){
+            await Company.findByIdAndUpdate(token.sub, { activeSessionToken: null });
+          }else if(token.accountType === "user"){
+            await CompanyUser.findByIdAndUpdate(token.sub, { activeSessionToken: null });
+          }
         } catch (error) {
           console.error("Error clearing session token:", error);
         }
