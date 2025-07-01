@@ -35,7 +35,7 @@ export default function CompanyUserSignupPage() {
     }
     setSuccess("Signup successful! Redirecting to login...");
     setTimeout(() => {
-      router.push("/login");
+      router.push(`/${companyName}/login`);
     }, 2000);
   };
 
