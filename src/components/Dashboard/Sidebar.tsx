@@ -2,8 +2,12 @@
 import { Sidebar, SidebarItems, SidebarItemGroup, SidebarItem } from "flowbite-react";
 import { HiHome, HiUser, HiCog, HiArrowSmRight } from "react-icons/hi";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 
 const DashboardSidebar = () => {
+  const handleSignOut = () => {
+    signOut();
+  }
   return (
     <Sidebar aria-label="Dashboard sidebar" className="w-64 h-screen sticky top-0">
         <SidebarItems>
@@ -17,7 +21,7 @@ const DashboardSidebar = () => {
             <SidebarItem as={Link} href="/dashboard/settings" icon={HiCog}>
               Settings
             </SidebarItem>
-            <SidebarItem as={Link} href="/signout" icon={HiArrowSmRight} className="text-red-600 dark:text-red-400">
+            <SidebarItem as={"button"} onClick={handleSignOut} icon={HiArrowSmRight} className="text-red-600 dark:text-red-400 w-full cursor-pointer text-left">
               Sign Out
             </SidebarItem>
           </SidebarItemGroup>
