@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/db";
 import Company from "@/models/Company";
+import CompanyUser from "@/models/CompanyUser";
 
 export async function GET() {
   try {
@@ -12,8 +13,14 @@ export async function GET() {
     if (!session || !session.user?.email) {
       return NextResponse.json({ valid: false }, { status: 401 });
     }
-    const company = await Company.findOne({ email: session.user.email });
-    if (!company || company.activeSessionToken !== session.sessionToken) {
+    let account;
+    if (session.accountType === "company") {
+   account = await Company.findOne({ email: session.user.email });
+  }else if(session.accountType === "user"){
+      account = await CompanyUser.findOne({ email: session.user.email });
+    }    
+    
+    if (!account || account.activeSessionToken !== session.sessionToken) {
       return NextResponse.json({ valid: false }, { status: 401 });
     }
     return NextResponse.json({ valid: true });
