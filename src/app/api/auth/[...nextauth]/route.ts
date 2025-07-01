@@ -74,7 +74,7 @@ export const authOptions: AuthOptions = {
           return {
             id: account._id.toString(),
             email: account.email,
-            name: account.accountName,
+            name: credentials.accountType === "company" ? account.companyName : account.firstName + " " + account.lastName,
             sessionToken,
             accountType: account.accountType,
           };
