@@ -26,6 +26,10 @@ const CompanySchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  accountType: {
+    type: String,
+    default: "company",
+  },
   activeSessionToken: {
     type: String,
     default: null,
