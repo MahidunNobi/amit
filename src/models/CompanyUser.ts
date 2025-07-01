@@ -30,6 +30,10 @@ const CompanyUserSchema = new mongoose.Schema({
     type: String,
     default: "user",
   },
+  activeSessionToken: {
+    type: String,
+    default: null,
+  },
 });
 
 export default mongoose.models.CompanyUser || mongoose.model("CompanyUser", CompanyUserSchema); 
