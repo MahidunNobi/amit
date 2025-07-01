@@ -16,8 +16,10 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
+      accountType?: string | null;
     };
     sessionToken?: string;
+    accountType?: string | null;
   }
   
   interface User {
@@ -26,6 +28,7 @@ declare module "next-auth" {
     email?: string | null;
     image?: string | null;
     sessionToken?: string;
+    accountType?: string | null;
   }
 }
 
@@ -66,6 +69,7 @@ export const authOptions: AuthOptions = {
             email: company.email,
             name: company.companyName,
             sessionToken,
+            accountType: company.accountType,
           };
         }
 
@@ -82,6 +86,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.name = user.name;
         token.sessionToken = user.sessionToken;
+        token.accountType = user.accountType;
       }
 
       return token;
@@ -90,6 +95,7 @@ export const authOptions: AuthOptions = {
       if (session.user) {
         session.user.name = token.name as string;
         session.sessionToken = token.sessionToken;
+        session.accountType = token.accountType as string | null;
       }
       return session;
     },
