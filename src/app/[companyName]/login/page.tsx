@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Label, TextInput, Button, Alert, Card, Spinner } from "flowbite-react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 
 export default function CompanyUserLoginPage() {
   const [email, setEmail] = useState("");
@@ -17,18 +18,25 @@ export default function CompanyUserLoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const res = await fetch("/api/company-user/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, companyName }),
-    });
-    setLoading(false);
-    const data = await res.json();
-    if (!res.ok) {
-      setError(data.message || "Invalid credentials or company.");
-      return;
+    try {
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+        accountType: "user",
+      });
+      
+      if (result?.error) {
+        setError("Invalid credentials. Please try again.");
+      } else if (result?.ok) {
+        router.push('/dashboard');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError("An error occurred during login. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    router.push(`/${companyName}`);
   };
 
   return (
