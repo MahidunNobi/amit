@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
-import User from '@/models/User';
+import Company from '@/models/Company';
 
 export async function GET() {
   try {
     await dbConnect();
     
     // Test database connection
-    const userCount = await User.countDocuments();
+    const companyCount = await Company.countDocuments();
     
     return NextResponse.json({ 
       message: 'Auth test successful',
-      userCount,
+      companyCount,
       env: {
         hasMongoUri: !!process.env.MONGODB_URI,
         hasNextAuthSecret: !!process.env.NEXTAUTH_SECRET,

@@ -34,4 +34,4 @@ const CompanySchema = new mongoose.Schema({
   resetPasswordExpires: Date,
 });
 
-export default mongoose.models.Company || mongoose.model("companies", CompanySchema);
+export default mongoose.models.companies || mongoose.model("companies", CompanySchema);

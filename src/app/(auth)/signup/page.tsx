@@ -6,8 +6,10 @@ import Link from 'next/link';
 import { Label, TextInput, Button, Alert, Card, Spinner } from 'flowbite-react';
 
 export default function SignupPage() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [address, setAddress] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [website, setWebsite] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,7 +25,7 @@ export default function SignupPage() {
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ firstName, lastName, email, password }),
+      body: JSON.stringify({ companyName, address, phoneNumber, website, email, password }),
     });
     setLoading(false);
     const data = await res.json();
@@ -45,25 +47,46 @@ export default function SignupPage() {
           {error && <Alert color="failure">{error}</Alert>}
           {success && <Alert color="success">{success}</Alert>}
           <div>
-            <Label htmlFor="firstName">First Name</Label>
+            <Label htmlFor="companyName">Company Name</Label>
             <TextInput
-              id="firstName"
+              id="companyName"
               type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
               required
-              placeholder="First Name"
+              placeholder="Company Name"
             />
           </div>
           <div>
-            <Label htmlFor="lastName">Last Name</Label>
+            <Label htmlFor="address">Address</Label>
             <TextInput
-              id="lastName"
+              id="address"
               type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
               required
-              placeholder="Last Name"
+              placeholder="Address"
+            />
+          </div>
+          <div>
+            <Label htmlFor="phoneNumber">Phone Number</Label>
+            <TextInput
+              id="phoneNumber"
+              type="text"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              required
+              placeholder="Phone Number"
+            />
+          </div>
+          <div>
+            <Label htmlFor="website">Website</Label>
+            <TextInput
+              id="website"
+              type="text"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="Website (optional)"
             />
           </div>
           <div>

@@ -2,11 +2,10 @@
 "use server";
 
 import { getServerSession } from "next-auth";
-
-import dbConnect from "@/lib/db";
-import User from "@/models/User";
-import { redirect } from "next/navigation";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import dbConnect from "@/lib/db";
+import Company from "@/models/Company";
+import { redirect } from "next/navigation";
 
 export async function validateSession() {
   const session = await getServerSession(authOptions);
@@ -16,11 +15,9 @@ export async function validateSession() {
   }
 
   await dbConnect();
-  const user = await User.findOne({ email: session.user.email });
-
-  if (!user || user.activeSessionToken !== session.sessionToken) {
+  const company = await Company.findOne({ email: session.user.email });
+  if (!company || company.activeSessionToken !== session.sessionToken) {
     redirect("/signout");
   }
-
-  return session;
+  return true;
 }

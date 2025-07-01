@@ -3,12 +3,11 @@ import mongoose from 'mongoose';
 const SessionSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'companies',
     required: true,
   },
-  device: {
+  userAgent: {
     type: String, // e.g., user-agent or device fingerprint
-    required: true,
   },
   createdAt: {
     type: Date,

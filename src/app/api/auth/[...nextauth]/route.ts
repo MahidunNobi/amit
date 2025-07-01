@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthOptions } from "next-auth";
 import dbConnect from "@/lib/db";
-import User from "@/models/User";
+import Company from "@/models/Company";
 import bcrypt from "bcryptjs";
 import GoogleProvider from "next-auth/providers/google";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
@@ -50,21 +50,21 @@ export const authOptions: AuthOptions = {
           return null;
         }
         await dbConnect();
-        const user = await User.findOne({ email: credentials.email });
+        const company = await Company.findOne({ email: credentials.email });
         
         if (
-          user &&
-          (await bcrypt.compare(credentials.password, user.password))
+          company &&
+          (await bcrypt.compare(credentials.password, company.password))
         ) {
           // Creating a new token and saving it to DB.
           const sessionToken = uuidv4();
-          user.activeSessionToken = sessionToken;
-          await user.save();
+          company.activeSessionToken = sessionToken;
+          await company.save();
 
           return {
-            id: user._id.toString(),
-            email: user.email,
-            name: `${user.firstName} ${user.lastName}`,
+            id: company._id.toString(),
+            email: company.email,
+            name: company.companyName,
             sessionToken,
           };
         }
@@ -107,7 +107,7 @@ export const authOptions: AuthOptions = {
         try {
           await dbConnect();
           // Clear the active session token when user signs out
-          await User.findByIdAndUpdate(token.sub, { activeSessionToken: null });
+          await Company.findByIdAndUpdate(token.sub, { activeSessionToken: null });
         } catch (error) {
           console.error("Error clearing session token:", error);
         }

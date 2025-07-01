@@ -3,26 +3,21 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/db";
-import User from "@/models/User";
+import Company from "@/models/Company";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json(
-      { valid: false, reason: "unauthenticated" },
-      { status: 401 }
-    );
+  try {
+    await dbConnect();
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.email) {
+      return NextResponse.json({ valid: false }, { status: 401 });
+    }
+    const company = await Company.findOne({ email: session.user.email });
+    if (!company || company.activeSessionToken !== session.sessionToken) {
+      return NextResponse.json({ valid: false }, { status: 401 });
+    }
+    return NextResponse.json({ valid: true });
+  } catch (error) {
+    return NextResponse.json({ valid: false }, { status: 500 });
   }
-
-  await dbConnect();
-  const user = await User.findOne({ email: session.user.email });
-
-  if (!user || user.activeSessionToken !== session.sessionToken) {
-    return NextResponse.json(
-      { valid: false, reason: "token_mismatch" },
-      { status: 403 }
-    );
-  }
-
-  return NextResponse.json({ valid: true }, { status: 200 });
 }
