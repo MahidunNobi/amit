@@ -1,10 +1,11 @@
 "use client"
 import { Sidebar, SidebarItems, SidebarItemGroup, SidebarItem } from "flowbite-react";
-import { HiHome, HiUser, HiCog, HiArrowSmRight } from "react-icons/hi";
+import { HiHome, HiUser, HiCog, HiArrowSmRight, HiUsers } from "react-icons/hi";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 const DashboardSidebar = () => {
+  const { data: session } = useSession();
   const handleSignOut = () => {
     signOut();
   }
@@ -21,6 +22,11 @@ const DashboardSidebar = () => {
             <SidebarItem as={Link} href="/dashboard/settings" icon={HiCog}>
               Settings
             </SidebarItem>
+            {session?.accountType === "company" && (
+              <SidebarItem as={Link} href="/dashboard/users" icon={HiUsers}>
+                Company Users
+              </SidebarItem>
+            )}
             <SidebarItem as={"button"} onClick={handleSignOut} icon={HiArrowSmRight} className="text-red-600 dark:text-red-400 w-full cursor-pointer text-left">
               Sign Out
             </SidebarItem>
