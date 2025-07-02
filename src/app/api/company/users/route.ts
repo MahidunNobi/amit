@@ -17,6 +17,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Company not found" }, { status: 404 });
   }
   // Find all users with this companyId
-  const users = await CompanyUser.find({ companyId: company._id }).select("-password");
+  const users = await CompanyUser.find({ company: company._id }).select("-password");
   return NextResponse.json({ users });
 } 
