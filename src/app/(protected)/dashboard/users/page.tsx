@@ -47,8 +47,15 @@ export default function CompanyUsersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Company Users</h1>
-
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">Company Users</h1>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          onClick={() => router.push("/dashboard/users/add")}
+        >
+          Add User
+        </button>
+      </div>
       <div className="relative overflow-x-auto">
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
