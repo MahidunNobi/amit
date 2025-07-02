@@ -2,11 +2,17 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import CompanyUser from '@/models/CompanyUser';
 import bcrypt from 'bcryptjs';
+import Company from '@/models/Company';
 
 export async function POST(req: Request) {
   try {
     await dbConnect();
     const { firstName, lastName, number, companyName, email, password } = await req.json();
+    console.log(companyName);
+    const company = await Company.findOne({ companyName: { $regex: new RegExp(`^${companyName}$`, "i") } });
+    if (!company) {
+      return NextResponse.json({ message: 'Company not found' }, { status: 404 });
+    }
 
     const existingUser = await CompanyUser.findOne({ email });
     if (existingUser) {
@@ -22,6 +28,7 @@ export async function POST(req: Request) {
       companyName,
       email,
       password: hashedPassword,
+      company: company._id,
     });
 
     await user.save();

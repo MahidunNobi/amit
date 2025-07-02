@@ -34,6 +34,11 @@ const CompanyUserSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "companies",
+    required: true,
+  },
 });
 
 export default mongoose.models.CompanyUser || mongoose.model("CompanyUser", CompanyUserSchema); 
