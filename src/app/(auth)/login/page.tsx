@@ -47,7 +47,7 @@ export default function LoginPage() {
         accountType: "company",
       });
       if (result?.error) {
-        setError({ common: "Invalid credentials. Please try again." });
+        setError({ common: "Incorrect email or password. Please try again." });
       } else if (result?.ok) {
         router.push("/dashboard");
       }
