@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Label, TextInput, Button, Alert, Card, Spinner } from 'flowbite-react';
+import { validateName } from '@/lib/nameValidation';
 
 const errorFadeIn = {
   animation: 'fadeIn 0.3s',
@@ -41,10 +42,12 @@ export default function SignupPage() {
       password?: string;
       common?: string;
     } = {};
-    if (!companyName.trim()) {
-      newError.companyName = 'Company name is required.';
-      hasError = true;
-    }
+ 
+    const validateCompanyName = validateName(companyName);
+      if (validateCompanyName) {
+        newError.companyName = validateCompanyName;
+        hasError = true;
+      }  
     if (!address.trim()) {
       newError.address = 'Address is required.';
       hasError = true;
