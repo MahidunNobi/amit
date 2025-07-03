@@ -19,7 +19,10 @@ export async function POST(req: Request) {
     if (existingCompany) {
       return NextResponse.json({ message: 'Company already exists' }, { status: 409 });
     }
-   
+    const existingUser = await CompanyUser.findOne({ email: email });
+    if (existingUser) {
+      return NextResponse.json({ message: 'Email already taken.' }, { status: 409 });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
