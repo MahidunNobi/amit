@@ -41,29 +41,29 @@ export default function SignupPage() {
       password?: string;
       common?: string;
     } = {};
-    if (!companyName) {
+    if (!companyName.trim()) {
       newError.companyName = 'Company name is required.';
       hasError = true;
     }
-    if (!address) {
+    if (!address.trim()) {
       newError.address = 'Address is required.';
       hasError = true;
     }
-    if (!phoneNumber) {
+    if (!phoneNumber.trim()) {
       newError.phoneNumber = 'Phone number is required.';
       hasError = true;
     }
-    if (!email) {
+    if (!email.trim()) {
       newError.email = 'Email is required.';
       hasError = true;
-    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
       newError.email = 'Please enter a valid email address.';
       hasError = true;
     }
-    if (!password) {
+    if (!password.trim()) {
       newError.password = 'Password is required.';
       hasError = true;
-    } else if (password.length < 6) {
+    } else if (password.trim().length < 6) {
       newError.password = 'Password must be at least 6 characters.';
       hasError = true;
     }

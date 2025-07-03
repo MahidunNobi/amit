@@ -23,14 +23,14 @@ export default function CompanyUserLoginPage() {
     setError({});
     let hasError = false;
     const newError: { email?: string; password?: string; common?: string } = {};
-    if (!email) {
+    if (!email.trim()) {
       newError.email = "Email is required.";
       hasError = true;
-    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
       newError.email = "Please enter a valid email address.";
       hasError = true;
     }
-    if (!password) {
+    if (!password.trim()) {
       newError.password = "Password is required.";
       hasError = true;
     }

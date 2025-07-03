@@ -21,10 +21,10 @@ export default function ForgotPasswordPage() {
     setError({});
     let hasError = false;
     const newError: { email?: string; common?: string } = {};
-    if (!email) {
+    if (!email.trim()) {
       newError.email = 'Please enter your email address.';
       hasError = true;
-    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
       newError.email = 'Please enter a valid email address.';
       hasError = true;
     }

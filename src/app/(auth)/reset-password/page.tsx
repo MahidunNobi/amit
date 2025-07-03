@@ -32,17 +32,17 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     let hasError = false;
     const newError: { password?: string; confirmPassword?: string; common?: string } = {};
-    if (!password) {
+    if (!password.trim()) {
       newError.password = "Please enter a new password.";
       hasError = true;
-    } else if (password.length < 6) {
+    } else if (password.trim().length < 6) {
       newError.password = "Password must be at least 6 characters.";
       hasError = true;
     }
-    if (!confirmPassword) {
+    if (!confirmPassword.trim()) {
       newError.confirmPassword = "Please confirm your new password.";
       hasError = true;
-    } else if (password !== confirmPassword) {
+    } else if (password.trim() !== confirmPassword.trim()) {
       newError.confirmPassword = "Passwords do not match.";
       hasError = true;
     }
