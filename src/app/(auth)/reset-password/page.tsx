@@ -5,6 +5,10 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Label, TextInput, Button, Alert, Card, Spinner } from 'flowbite-react';
 
+const errorFadeIn = {
+  animation: 'fadeIn 0.3s',
+};
+
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -12,7 +16,7 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState<{ password?: string; confirmPassword?: string; common?: string }>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -20,17 +24,33 @@ export default function ResetPasswordPage() {
     if (tokenFromUrl) {
       setToken(tokenFromUrl);
     } else {
-        setError("No token provided. Please request a new password reset link.");
+      setError({ common: "No token provided. Please request a new password reset link." });
     }
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      setError("Passwords don't match.");
+    let hasError = false;
+    const newError: { password?: string; confirmPassword?: string; common?: string } = {};
+    if (!password) {
+      newError.password = "Please enter a new password.";
+      hasError = true;
+    } else if (password.length < 6) {
+      newError.password = "Password must be at least 6 characters.";
+      hasError = true;
+    }
+    if (!confirmPassword) {
+      newError.confirmPassword = "Please confirm your new password.";
+      hasError = true;
+    } else if (password !== confirmPassword) {
+      newError.confirmPassword = "Passwords do not match.";
+      hasError = true;
+    }
+    if (hasError) {
+      setError(newError);
       return;
     }
-    setError('');
+    setError({});
     setMessage('');
     setLoading(true);
     const res = await fetch('/api/auth/reset-password', {
@@ -41,7 +61,7 @@ export default function ResetPasswordPage() {
     setLoading(false);
     const data = await res.json();
     if (!res.ok) {
-      setError(data.message || 'Something went wrong!');
+      setError({ common: data.message || 'Something went wrong!' });
     } else {
       setMessage(data.message + " Redirecting to login...");
       setTimeout(() => {
@@ -52,34 +72,37 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
+      <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
       <Card className="w-full max-w-sm p-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           <h1 className="text-2xl font-bold text-center mb-4">Reset Password</h1>
-          {error && <Alert color="failure">{error}</Alert>}
+          {error.common && <Alert color="failure" style={errorFadeIn}>{error.common}</Alert>}
           {message && <Alert color="success">{message}</Alert>}
           {token ? (
             <>
               <div>
-                <Label htmlFor="password">New Password</Label>
+                <Label htmlFor="password" color={error.password ? 'failure' : undefined}>New Password</Label>
                 <TextInput
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
+                  color={error.password ? 'failure' : 'info'}
                   placeholder="New Password"
                 />
+                {error.password && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.password}</p>}
               </div>
               <div>
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Label htmlFor="confirmPassword" color={error.confirmPassword ? 'failure' : undefined}>Confirm New Password</Label>
                 <TextInput
                   id="confirmPassword"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
+                  color={error.confirmPassword ? 'failure' : 'info'}
                   placeholder="Confirm New Password"
                 />
+                {error.confirmPassword && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.confirmPassword}</p>}
               </div>
               <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={loading}>
                 {loading ? (
