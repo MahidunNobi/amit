@@ -4,6 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import { Label, TextInput, Button, Alert, Card, Spinner } from "flowbite-react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { validateEmail } from '@/lib/emailValidation';
+import { validatePassword } from '@/lib/passwordValidation';
 
 const errorFadeIn = {
   animation: 'fadeIn 0.3s',
@@ -23,15 +25,14 @@ export default function CompanyUserLoginPage() {
     setError({});
     let hasError = false;
     const newError: { email?: string; password?: string; common?: string } = {};
-    if (!email.trim()) {
-      newError.email = "Email is required.";
-      hasError = true;
-    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
-      newError.email = "Please enter a valid email address.";
+    const emailMsg = validateEmail(email);
+    if (emailMsg) {
+      newError.email = emailMsg;
       hasError = true;
     }
-    if (!password.trim()) {
-      newError.password = "Password is required.";
+    const passwordMsg = validatePassword(password);
+    if (passwordMsg) {
+      newError.password = passwordMsg;
       hasError = true;
     }
     if (hasError) {

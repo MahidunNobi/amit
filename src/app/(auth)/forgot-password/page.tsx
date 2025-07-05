@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Label, TextInput, Button, Alert, Card, Spinner } from 'flowbite-react';
+import { validateEmail } from '@/lib/emailValidation';
 
 // Add fade-in animation style
 const errorFadeIn = {
@@ -21,11 +22,12 @@ export default function ForgotPasswordPage() {
     setError({});
     let hasError = false;
     const newError: { email?: string; common?: string } = {};
+    const emailMsg = validateEmail(email);
     if (!email.trim()) {
       newError.email = 'Please enter your email address.';
       hasError = true;
-    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
-      newError.email = 'Please enter a valid email address.';
+    } else if (emailMsg) {
+      newError.email = emailMsg;
       hasError = true;
     }
     if (hasError) {

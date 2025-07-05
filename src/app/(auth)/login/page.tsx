@@ -7,6 +7,8 @@ import Link from "next/link";
 import { Label, TextInput, Button, Alert, Card, Spinner } from "flowbite-react";
 import { FaGoogle } from "react-icons/fa";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { validateEmail } from '@/lib/emailValidation';
+import { validatePassword } from '@/lib/passwordValidation';
 // Removed import of missing GoogleSignInButton
 
 export default function LoginPage() {
@@ -26,15 +28,14 @@ export default function LoginPage() {
     setLoading(true);
     let hasError = false;
     const newError: { email?: string; password?: string; common?: string } = {};
-    if (!email.trim()) {
-      newError.email = 'Email is required.';
-      hasError = true;
-    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
-      newError.email = 'Please enter a valid email address.';
+    const emailMsg = validateEmail(email);
+    if (emailMsg) {
+      newError.email = emailMsg;
       hasError = true;
     }
-    if (!password.trim()) {
-      newError.password = 'Password is required.';
+    const passwordMsg = validatePassword(password);
+    if (passwordMsg) {
+      newError.password = passwordMsg;
       hasError = true;
     }
     if (hasError) {

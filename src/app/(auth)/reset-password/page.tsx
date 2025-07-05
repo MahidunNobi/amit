@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Label, TextInput, Button, Alert, Card, Spinner } from 'flowbite-react';
+import { validatePassword } from '@/lib/passwordValidation';
 
 const errorFadeIn = {
   animation: 'fadeIn 0.3s',
@@ -32,15 +33,14 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     let hasError = false;
     const newError: { password?: string; confirmPassword?: string; common?: string } = {};
-    if (!password.trim()) {
-      newError.password = "Please enter a new password.";
-      hasError = true;
-    } else if (password.trim().length < 6) {
-      newError.password = "Password must be at least 6 characters.";
+    const passwordMsg = validatePassword(password);
+    if (passwordMsg) {
+      newError.password = passwordMsg;
       hasError = true;
     }
-    if (!confirmPassword.trim()) {
-      newError.confirmPassword = "Please confirm your new password.";
+    const confirmPasswordMsg = validatePassword(confirmPassword);
+    if (confirmPasswordMsg) {
+      newError.confirmPassword = confirmPasswordMsg;
       hasError = true;
     } else if (password.trim() !== confirmPassword.trim()) {
       newError.confirmPassword = "Passwords do not match.";
