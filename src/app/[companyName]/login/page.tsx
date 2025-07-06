@@ -6,6 +6,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { validateEmail } from '@/lib/emailValidation';
 import { validatePassword } from '@/lib/passwordValidation';
+import PasswordInput from "@/components/PasswordInput";
 
 const errorFadeIn = {
   animation: 'fadeIn 0.3s',
@@ -75,23 +76,19 @@ export default function CompanyUserLoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              color={error.email ? 'failure' : 'info'}
+              color={error.email ? 'failure' : undefined}
               placeholder="Email"
             />
             {error.email && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.email}</p>}
           </div>
-          <div>
-            <Label htmlFor="password" color={error.password ? 'failure' : undefined}>Password</Label>
-            <TextInput
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              color={error.password ? 'failure' : 'info'}
-              placeholder="Password"
-            />
-            {error.password && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.password}</p>}
-          </div>
+          <PasswordInput
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            label="Password"
+            placeholder="Password"
+            error={error.password}
+          />
           <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={loading}>
             {loading ? (
               <><Spinner size="sm" aria-label="Loading" /> <span className="pl-2">Loading...</span></>

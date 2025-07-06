@@ -9,6 +9,7 @@ import { FaGoogle } from "react-icons/fa";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { validateEmail } from '@/lib/emailValidation';
 import { validatePassword } from '@/lib/passwordValidation';
+import PasswordInput from "@/components/PasswordInput";
 // Removed import of missing GoogleSignInButton
 
 export default function LoginPage() {
@@ -78,32 +79,21 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              color={error.email ? "failure" : "info"}
+              color={error.email ? "failure" : undefined}
               placeholder="test@example.com"
             />
             {error.email && (
               <p className="text-red-500 text-xs mt-1">{error.email}</p>
             )}
           </div>
-          <div>
-            <Label
-              htmlFor="password"
-              color={error.password ? "failure" : undefined}
-            >
-              Password
-            </Label>
-            <TextInput
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              color={error.password ? "failure" : undefined}
-              placeholder="password"
-            />
-            {error.password && (
-              <p className="text-red-500 text-xs mt-1">{error.password}</p>
-            )}
-          </div>
+          <PasswordInput
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            label="Password"
+            placeholder="password"
+            error={error.password}
+          />
           <div className="text-right">
             <Link
               href="/forgot-password"

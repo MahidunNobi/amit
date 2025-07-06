@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Label, TextInput, Button, Alert, Card, Spinner } from "flowbite-react";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
+import PasswordInput from "@/components/PasswordInput";
 
 export default function AddUserPage() {
   const { data: session, status } = useSession();
@@ -95,17 +96,14 @@ export default function AddUserPage() {
               placeholder="Email"
             />
           </div>
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <TextInput
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Password"
-            />
-          </div>
+          <PasswordInput
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            label="Password"
+            placeholder="Password"
+            required={true}
+          />
           <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={loading}>
             {loading ? (
               <><Spinner size="sm" aria-label="Loading" /> <span className="pl-2">Loading...</span></>

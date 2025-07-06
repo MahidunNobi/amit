@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              color={error.email ? 'failure' : 'info'}
+              color={error.email ? 'failure' : undefined}
               placeholder="Enter your email"
             />
             {error.email && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.email}</p>}

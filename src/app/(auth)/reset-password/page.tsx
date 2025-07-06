@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Label, TextInput, Button, Alert, Card, Spinner } from 'flowbite-react';
 import { validatePassword } from '@/lib/passwordValidation';
+import PasswordInput from "@/components/PasswordInput";
 
 const errorFadeIn = {
   animation: 'fadeIn 0.3s',
@@ -80,30 +81,22 @@ export default function ResetPasswordPage() {
           {message && <Alert color="success">{message}</Alert>}
           {token ? (
             <>
-              <div>
-                <Label htmlFor="password" color={error.password ? 'failure' : undefined}>New Password</Label>
-                <TextInput
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  color={error.password ? 'failure' : 'info'}
-                  placeholder="New Password"
-                />
-                {error.password && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.password}</p>}
-              </div>
-              <div>
-                <Label htmlFor="confirmPassword" color={error.confirmPassword ? 'failure' : undefined}>Confirm New Password</Label>
-                <TextInput
-                  id="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  color={error.confirmPassword ? 'failure' : 'info'}
-                  placeholder="Confirm New Password"
-                />
-                {error.confirmPassword && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.confirmPassword}</p>}
-              </div>
+              <PasswordInput
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                label="New Password"
+                placeholder="New Password"
+                error={error.password}
+              />
+              <PasswordInput
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                label="Confirm New Password"
+                placeholder="Confirm New Password"
+                error={error.confirmPassword}
+              />
               <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={loading}>
                 {loading ? (
                   <><Spinner size="sm" aria-label="Loading" /> <span className="pl-2">Loading...</span></>

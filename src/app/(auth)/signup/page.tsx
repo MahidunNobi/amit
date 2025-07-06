@@ -9,6 +9,7 @@ import { validateEmail } from "@/lib/emailValidation";
 import { validatePassword } from "@/lib/passwordValidation";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
+import PasswordInput from "@/components/PasswordInput";
 
 const errorFadeIn = {
   animation: "fadeIn 0.3s",
@@ -243,39 +244,26 @@ export default function SignupPage() {
               </p>
             )}
           </div>
-          <div>
-            <Label
-              htmlFor="password"
-              color={error.password ? "failure" : undefined}
-            >
-              Password
-            </Label>
-            <TextInput
-              id="password"
-              type="password"
-              value={password}
-              onChange={handlePasswordChange}
-              color={error.password ? "failure" : undefined}
-              placeholder="Password"
-            />
-            {error.password && (
-              <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>
-                {error.password}
-              </p>
-            )}
-            {password && (
-              <div>
-                <p style={{ color: strength.color }}>{strength.label}</p>
-                <div
-                  style={{
-                    height: "5px",
-                    backgroundColor: strength.color,
-                    width: `${(strength.score / 5) * 100}%`,
-                  }}
-                />
-              </div>
-            )}
-          </div>
+          <PasswordInput
+            id="password"
+            value={password}
+            onChange={handlePasswordChange}
+            label="Password"
+            placeholder="Password"
+            error={error.password}
+          />
+          {password && (
+            <div>
+              <p style={{ color: strength.color }}>{strength.label}</p>
+              <div
+                style={{
+                  height: "5px",
+                  backgroundColor: strength.color,
+                  width: `${(strength.score / 5) * 100}%`,
+                }}
+              />
+            </div>
+          )}
           <Button
             type="submit"
             color="blue"
