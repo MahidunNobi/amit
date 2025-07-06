@@ -6,6 +6,8 @@ import Link from "next/link";
 import { validateName } from '@/lib/nameValidation';
 import { validateEmail } from '@/lib/emailValidation';
 import { validatePassword } from '@/lib/passwordValidation';
+import "react-phone-number-input/style.css";
+import PhoneInput from "react-phone-number-input";
 
 const errorFadeIn = {
   animation: 'fadeIn 0.3s',
@@ -154,7 +156,7 @@ export default function CompanyUserSignupPage() {
               type="text"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              color={error.firstName ? 'failure' : 'info'}
+              color={error.firstName ? 'failure' : undefined}
               placeholder="First Name"
             />
             {error.firstName && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.firstName}</p>}
@@ -166,20 +168,18 @@ export default function CompanyUserSignupPage() {
               type="text"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              color={error.lastName ? 'failure' : 'info'}
+              color={error.lastName ? 'failure' : undefined}
               placeholder="Last Name"
             />
             {error.lastName && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.lastName}</p>}
           </div>
           <div>
             <Label htmlFor="number" color={error.number ? 'failure' : undefined}>Number</Label>
-            <TextInput
-              id="number"
-              type="text"
+            <PhoneInput
+              placeholder="Enter phone number"
               value={number}
-              onChange={(e) => setNumber(e.target.value)}
-              color={error.number ? 'failure' : 'info'}
-              placeholder="Number"
+              onChange={(value) => setNumber(value?.toString() || "")}
+              className="[&>input]:block [&>input]:w-full [&>input]:border [&>input]:focus:outline-none [&>input]:focus:ring-1 [&>input]:disabled:cursor-not-allowed [&>input]:disabled:opacity-50 [&>input]:border-gray-300 [&>input]:bg-gray-50 [&>input]:text-gray-900 [&>input]:placeholder-gray-500 [&>input]:focus:border-primary-500 [&>input]:focus:ring-primary-500 [&>input]:dark:border-gray-600 [&>input]:dark:bg-gray-700 [&>input]:dark:text-white [&>input]:dark:placeholder-gray-400 [&>input]:dark:focus:border-primary-500 [&>input]:dark:focus:ring-primary-500 [&>input]:p-2.5 [&>input]:text-sm [&>input]:rounded-lg"
             />
             {error.number && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.number}</p>}
           </div>
@@ -190,7 +190,7 @@ export default function CompanyUserSignupPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              color={error.email ? 'failure' : 'info'}
+              color={error.email ? 'failure' : undefined}
               placeholder="Email"
             />
             {error.email && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.email}</p>}
@@ -202,7 +202,7 @@ export default function CompanyUserSignupPage() {
               type="password"
               value={password}
               onChange={handlePasswordChange}
-              color={error.password ? 'failure' : 'info'}
+              color={error.password ? 'failure' : undefined}
               placeholder="Password"
             />
             {error.password && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.password}</p>}
