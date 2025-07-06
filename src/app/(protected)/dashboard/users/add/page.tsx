@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Label, TextInput, Button, Alert, Card, Spinner } from "flowbite-react";
+import "react-phone-number-input/style.css";
+import PhoneInput from "react-phone-number-input";
 
 export default function AddUserPage() {
   const { data: session, status } = useSession();
@@ -75,13 +77,11 @@ export default function AddUserPage() {
           </div>
           <div>
             <Label htmlFor="number">Number</Label>
-            <TextInput
-              id="number"
-              type="text"
+            <PhoneInput
+              placeholder="Enter phone number"
               value={number}
-              onChange={(e) => setNumber(e.target.value)}
-              required
-              placeholder="Number"
+              onChange={(value) => setNumber(value?.toString() || "")}
+              className="[&>input]:block [&>input]:w-full [&>input]:border [&>input]:focus:outline-none [&>input]:focus:ring-1 [&>input]:disabled:cursor-not-allowed [&>input]:disabled:opacity-50 [&>input]:border-gray-300 [&>input]:bg-gray-50 [&>input]:text-gray-900 [&>input]:placeholder-gray-500 [&>input]:focus:border-primary-500 [&>input]:focus:ring-primary-500 [&>input]:dark:border-gray-600 [&>input]:dark:bg-gray-700 [&>input]:dark:text-white [&>input]:dark:placeholder-gray-400 [&>input]:dark:focus:border-primary-500 [&>input]:dark:focus:ring-primary-500 [&>input]:p-2.5 [&>input]:text-sm [&>input]:rounded-lg"
             />
           </div>
           <div>
