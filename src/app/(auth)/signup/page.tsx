@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Label, TextInput, Button, Alert, Card, Spinner } from 'flowbite-react';
@@ -29,7 +29,51 @@ export default function SignupPage() {
   }>({});
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [strength, setStrength] = useState({
+    score: 0,
+    label: '',
+    color: ''
+  });
   const router = useRouter();
+
+
+  const checkPasswordStrength = (pass:string) => {
+    let score = 0;
+    
+    // Length
+    if (pass.length > 0) score += 1;
+    if (pass.length >= 8) score += 1;
+    
+    // Complexity
+    if (/[A-Z]/.test(pass)) score += 1;
+    if (/[0-9]/.test(pass)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+    
+    // Determine label and color
+    let label, color;
+    if (score <= 2) {
+      label = 'Weak';
+      color = 'red';
+    } else if (score <= 4) {
+      label = 'Medium';
+      color = 'orange';
+    } else {
+      label = 'Strong';
+      color = 'green';
+    }
+    
+    setStrength({
+      score,
+      label,
+      color
+    });
+  };
+
+  const handlePasswordChange = (e:ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    checkPasswordStrength(newPassword);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +111,9 @@ export default function SignupPage() {
     if (passwordMsg) {
       newError.password = passwordMsg;
       hasError = true;
+    }else if(strength.label === "Weak"){
+      newError.password = "Password is week.";
+      hasError = true;
     }
     if (hasError) {
       setError(newError);
@@ -89,7 +136,6 @@ export default function SignupPage() {
       router.push('/login');
     }, 2000);
   };
-
   return (
     <div className="flex items-center justify-center min-h-screen">
       <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
@@ -162,11 +208,22 @@ export default function SignupPage() {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
               color={error.password ? 'failure' : 'info'}
               placeholder="Password"
             />
             {error.password && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.password}</p>}
+            {password && (
+        <div>
+          <p style={{color: strength.color}}>{strength.label}</p>
+          <div style={{
+            height: '5px',
+            backgroundColor: strength.color,
+            width: `${(strength.score / 5) * 100}%`
+          }} />
+          
+        </div>
+      )}
           </div>
           <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={loading}>
             {loading ? (
