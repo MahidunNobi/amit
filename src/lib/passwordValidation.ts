@@ -1,3 +1,4 @@
+// Validates password according to defined rules
 // Password validation utility
 // Rules: required, min 6, max 12 characters
 

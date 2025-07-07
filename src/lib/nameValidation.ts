@@ -1,3 +1,4 @@
+// Validates name according to defined rules
 // Name validation utility
 // Rules: required, min 4, max 50, only letters (A-Z, a-z) and hyphen (-) allowed
 

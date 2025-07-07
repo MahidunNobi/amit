@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+// Protects routes by validating session periodically
 export default function SessionGuard({
   children,
 }: {

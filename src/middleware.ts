@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+// Middleware to handle authentication token validation
 export async function middleware(request: NextRequest) {
   const tokenData = await getToken({ req: request });
 
