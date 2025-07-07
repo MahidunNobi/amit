@@ -14,6 +14,7 @@ interface PasswordInputProps {
   required?: boolean;
   error?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 export default function PasswordInput({
@@ -25,6 +26,7 @@ export default function PasswordInput({
   color = undefined,
   required = false,
   error,
+  disabled = false,
   className = ""
 }: PasswordInputProps) {
   const [showPassword, setShowPassword] = useState(false);
@@ -49,6 +51,7 @@ export default function PasswordInput({
           color={error ? 'failure' : color}
           placeholder={placeholder}
           required={required}
+          disabled={disabled}
         //   className="pr-10"
         />
         <button

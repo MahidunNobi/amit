@@ -1,5 +1,5 @@
 "use client";
-import { useState, ChangeEvent } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Label, TextInput, Button, Alert, Card, Spinner } from "flowbite-react";
 import Link from "next/link";
@@ -35,9 +35,32 @@ export default function CompanyUserSignupPage() {
     label: '',
     color: ''
   });
+  const [companyExists, setCompanyExists] = useState(true);
+  const [checkingCompany, setCheckingCompany] = useState(true);
   const router = useRouter();
   const params = useParams();
   const companyName = params.companyName as string;
+
+  useEffect(() => {
+    const checkCompany = async () => {
+      setCheckingCompany(true);
+      try {
+        const res = await fetch(`/api/company/check?companyName=${encodeURIComponent(companyName)}`);
+        if (!res.ok) {
+          setCompanyExists(false);
+          setError({ common: "Company doesn't exist." });
+        } else {
+          setCompanyExists(true);
+        }
+      } catch (err) {
+        setCompanyExists(false);
+        setError({ common: "Company doesn't exist." });
+      } finally {
+        setCheckingCompany(false);
+      }
+    };
+    checkCompany();
+  }, [companyName]);
 
   const checkPasswordStrength = (pass: string) => {
     let score = 0;
@@ -159,6 +182,7 @@ export default function CompanyUserSignupPage() {
               onChange={(e) => setFirstName(e.target.value)}
               color={error.firstName ? 'failure' : undefined}
               placeholder="First Name"
+              disabled={!companyExists || checkingCompany}
             />
             {error.firstName && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.firstName}</p>}
           </div>
@@ -171,6 +195,7 @@ export default function CompanyUserSignupPage() {
               onChange={(e) => setLastName(e.target.value)}
               color={error.lastName ? 'failure' : undefined}
               placeholder="Last Name"
+              disabled={!companyExists || checkingCompany}
             />
             {error.lastName && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.lastName}</p>}
           </div>
@@ -181,6 +206,7 @@ export default function CompanyUserSignupPage() {
               value={number}
               onChange={(value) => setNumber(value?.toString() || "")}
               className="[&>input]:block [&>input]:w-full [&>input]:border [&>input]:focus:outline-none [&>input]:focus:ring-1 [&>input]:disabled:cursor-not-allowed [&>input]:disabled:opacity-50 [&>input]:border-gray-300 [&>input]:bg-gray-50 [&>input]:text-gray-900 [&>input]:placeholder-gray-500 [&>input]:focus:border-primary-500 [&>input]:focus:ring-primary-500 [&>input]:dark:border-gray-600 [&>input]:dark:bg-gray-700 [&>input]:dark:text-white [&>input]:dark:placeholder-gray-400 [&>input]:dark:focus:border-primary-500 [&>input]:dark:focus:ring-primary-500 [&>input]:p-2.5 [&>input]:text-sm [&>input]:rounded-lg"
+              disabled={!companyExists || checkingCompany}
             />
             {error.number && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.number}</p>}
           </div>
@@ -193,6 +219,7 @@ export default function CompanyUserSignupPage() {
               onChange={(e) => setEmail(e.target.value)}
               color={error.email ? 'failure' : undefined}
               placeholder="Email"
+              disabled={!companyExists || checkingCompany}
             />
             {error.email && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.email}</p>}
           </div>
@@ -203,6 +230,7 @@ export default function CompanyUserSignupPage() {
             label="Password"
             placeholder="Password"
             error={error.password}
+            disabled={!companyExists || checkingCompany}
           />
           {password && (
             <div>
@@ -214,7 +242,7 @@ export default function CompanyUserSignupPage() {
               }} />
             </div>
           )}
-          <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={loading}>
+          <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={loading || !companyExists || checkingCompany}>
             {loading ? (
               <><Spinner size="sm" aria-label="Loading" /> <span className="pl-2">Loading...</span></>
             ) : (

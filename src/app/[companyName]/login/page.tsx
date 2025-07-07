@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Label, TextInput, Button, Alert, Card, Spinner } from "flowbite-react";
 import Link from "next/link";
@@ -18,9 +18,32 @@ export default function CompanyUserLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<{ email?: string; password?: string; common?: string }>({});
   const [loading, setLoading] = useState(false);
+  const [companyExists, setCompanyExists] = useState(true);
+  const [checkingCompany, setCheckingCompany] = useState(true);
   const router = useRouter();
   const params = useParams();
   const companyName = params.companyName as string;
+
+  useEffect(() => {
+    const checkCompany = async () => {
+      setCheckingCompany(true);
+      try {
+        const res = await fetch(`/api/company/check?companyName=${encodeURIComponent(companyName)}`);
+        if (!res.ok) {
+          setCompanyExists(false);
+          setError({ common: "Company doesn't exist." });
+        } else {
+          setCompanyExists(true);
+        }
+      } catch (err) {
+        setCompanyExists(false);
+        setError({ common: "Company doesn't exist." });
+      } finally {
+        setCheckingCompany(false);
+      }
+    };
+    checkCompany();
+  }, [companyName]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +102,7 @@ export default function CompanyUserLoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               color={error.email ? 'failure' : undefined}
               placeholder="Email"
+              disabled={!companyExists || checkingCompany}
             />
             {error.email && <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{error.email}</p>}
           </div>
@@ -89,8 +113,9 @@ export default function CompanyUserLoginPage() {
             label="Password"
             placeholder="Password"
             error={error.password}
+            disabled={!companyExists || checkingCompany}
           />
-          <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={loading}>
+          <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={loading || !companyExists || checkingCompany}>
             {loading ? (
               <><Spinner size="sm" aria-label="Loading" /> <span className="pl-2">Loading...</span></>
             ) : (
