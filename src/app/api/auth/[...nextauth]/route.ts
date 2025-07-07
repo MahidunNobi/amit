@@ -89,6 +89,54 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+      if (account?.provider === 'google') {
+        await dbConnect();
+        // Try to extract companyName from callbackUrl (if present)
+        let companyName = null;
+        if (account?.callbackUrl && typeof account.callbackUrl === 'string') {
+          const match = account.callbackUrl.match(/\/([^\/]+)\/dashboard/);
+          if (match) companyName = decodeURIComponent(match[1]);
+        }
+        // Fallback: try from profile or email domain
+        // Find company by name
+        let company = null;
+        if (companyName) {
+          company = await Company.findOne({ companyName: { $regex: new RegExp(`^${companyName}$`, "i") } });
+        }
+        // If not found, try to find by email domain
+        if (!company && user?.email) {
+          const domain = user.email.split('@')[1];
+          company = await Company.findOne({ email: { $regex: new RegExp(`@${domain}$`, "i") } });
+        }
+        if (!company) {
+          // No company found, reject sign in
+          return false;
+        }
+        // Check if user exists
+        let companyUser = await CompanyUser.findOne({ email: user.email });
+        if (!companyUser) {
+          // Create new CompanyUser
+          const [firstName, ...rest] = (user.name || '').split(' ');
+          const lastName = rest.join(' ') || '-';
+          const number = 'N/A';
+          const password = require('crypto').randomBytes(32).toString('hex');
+          companyUser = new CompanyUser({
+            firstName: firstName || '-',
+            lastName,
+            number,
+            companyName: company.companyName,
+            email: user.email,
+            password,
+            company: company._id,
+            accountType: 'user',
+          });
+          await companyUser.save();
+        }
+        user.accountType = 'user';
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.name = user.name;

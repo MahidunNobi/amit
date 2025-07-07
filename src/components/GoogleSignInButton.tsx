@@ -5,13 +5,14 @@ import React from 'react';
 
 interface GoogleSignInButtonProps {
   label?: string;
+  callbackUrl?: string;
 }
 
-const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ label = 'Sign in with Google' }) => (
+const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ label = 'Sign in with Google', callbackUrl = '/dashboard' }) => (
   <Button
     color="light"
     className="w-full mb-4 flex items-center justify-center gap-2 cursor-pointer"
-    onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+    onClick={() => signIn('google', { callbackUrl })}
   >
     <FaGoogle className="text-lg" /> {label}
   </Button>

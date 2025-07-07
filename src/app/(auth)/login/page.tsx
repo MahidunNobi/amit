@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Label, TextInput, Button, Alert, Card, Spinner } from "flowbite-react";
 import { FaGoogle } from "react-icons/fa";
-import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { validateEmail } from '@/lib/emailValidation';
 import { validatePassword } from '@/lib/passwordValidation';
 import PasswordInput from "@/components/PasswordInput";
@@ -124,7 +123,7 @@ export default function LoginPage() {
             </Link>
           </p>
         </form>
-        <GoogleSignInButton />
+        {/* <GoogleSignInButton /> */}
       </Card>
     </div>
   );

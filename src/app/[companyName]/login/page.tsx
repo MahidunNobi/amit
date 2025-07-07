@@ -7,6 +7,7 @@ import { signIn } from "next-auth/react";
 import { validateEmail } from '@/lib/emailValidation';
 import { validatePassword } from '@/lib/passwordValidation';
 import PasswordInput from "@/components/PasswordInput";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 const errorFadeIn = {
   animation: 'fadeIn 0.3s',
@@ -103,7 +104,9 @@ export default function CompanyUserLoginPage() {
             </Link>
           </p>
         </form>
+        {/* <GoogleSignInButton label="Sign in with Google" callbackUrl={`/dashboard`} /> */}
       </Card>
+      
     </div>
   );
 } 
