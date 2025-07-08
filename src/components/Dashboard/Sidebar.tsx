@@ -23,9 +23,14 @@ const DashboardSidebar = () => {
               Settings
             </SidebarItem>
             {session?.accountType === "company" && (
-              <SidebarItem as={Link} href="/dashboard/users" icon={HiUsers}>
-                Company Users
-              </SidebarItem>
+              <>
+                <SidebarItem as={Link} href="/dashboard/users" icon={HiUsers}>
+                  Company Users
+                </SidebarItem>
+                <SidebarItem as={Link} href="/dashboard/projects" icon={HiCog}>
+                  Company Projects
+                </SidebarItem>
+              </>
             )}
             <SidebarItem as={"button"} onClick={handleSignOut} icon={HiArrowSmRight} className="text-red-600 dark:text-red-400 w-full cursor-pointer text-left">
               Sign Out
