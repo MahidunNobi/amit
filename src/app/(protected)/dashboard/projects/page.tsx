@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Project {
   _id: string;
@@ -41,12 +42,12 @@ export default function CompanyProjectsPage() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Company Projects</h1>
-        <button
+        <Link
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={() => router.push("/dashboard/projects/add")}
+          href={"/dashboard/projects/add"}
         >
           Add Project
-        </button>
+        </Link>
       </div>
       <div className="relative overflow-x-auto">
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">

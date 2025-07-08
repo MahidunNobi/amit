@@ -3,6 +3,11 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Label, TextInput, Button, Alert, Card, Spinner, Textarea } from "flowbite-react";
+import { validateName } from "@/lib/nameValidation";
+
+const errorFadeIn = {
+  animation: "fadeIn 0.3s",
+};
 
 export default function AddProjectPage() {
   const { data: session, status } = useSession();
@@ -12,6 +17,7 @@ export default function AddProjectPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; details?: string; deadline?: string; common?: string }>({});
 
   if (status === "loading") return <div>Loading...</div>;
   if (!session || session.accountType !== "company") {
@@ -20,7 +26,28 @@ export default function AddProjectPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFieldErrors({});
     setError("");
+    let hasError = false;
+    const newErrors: { name?: string; details?: string; deadline?: string; common?: string } = {};
+    // Validate name
+    const nameMsg = validateName(name);
+    if (nameMsg) {
+      newErrors.name = nameMsg;
+      hasError = true;
+    }
+    if (!details.trim()) {
+      newErrors.details = "Details are required.";
+      hasError = true;
+    }
+    if (!deadline) {
+      newErrors.deadline = "Deadline is required.";
+      hasError = true;
+    }
+    if (hasError) {
+      setFieldErrors(newErrors);
+      return;
+    }
     setLoading(true);
     const res = await fetch("/api/company/projects", {
       method: "POST",
@@ -34,7 +61,7 @@ export default function AddProjectPage() {
     setLoading(false);
     const data = await res.json();
     if (!res.ok) {
-      setError(data.message || "Something went wrong!");
+      setFieldErrors({ common: data.message || "Something went wrong!" });
       return;
     }
     router.push("/dashboard/projects");
@@ -42,40 +69,52 @@ export default function AddProjectPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
+      <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
       <Card className="w-full max-w-sm p-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           <h1 className="text-2xl font-bold text-center mb-4">Add Project</h1>
-          {error && <Alert color="failure">{error}</Alert>}
+          {fieldErrors.common && (
+            <Alert color="failure" style={errorFadeIn}>{fieldErrors.common}</Alert>
+          )}
           <div>
-            <Label htmlFor="name">Project Name</Label>
+            <Label htmlFor="name" color={fieldErrors.name ? "failure" : undefined}>Project Name</Label>
             <TextInput
               id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              required
+              color={fieldErrors.name ? "failure" : undefined}
               placeholder="Project Name"
             />
+            {fieldErrors.name && (
+              <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{fieldErrors.name}</p>
+            )}
           </div>
           <div>
-            <Label htmlFor="details">Details</Label>
+            <Label htmlFor="details" color={fieldErrors.details ? "failure" : undefined}>Details</Label>
             <Textarea
               id="details"
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              required
+              color={fieldErrors.details ? "failure" : undefined}
               placeholder="Project Details"
             />
+            {fieldErrors.details && (
+              <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{fieldErrors.details}</p>
+            )}
           </div>
           <div>
-            <Label htmlFor="deadline">Deadline</Label>
+            <Label htmlFor="deadline" color={fieldErrors.deadline ? "failure" : undefined}>Deadline</Label>
             <TextInput
               id="deadline"
               type="date"
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              required
+              color={fieldErrors.deadline ? "failure" : undefined}
             />
+            {fieldErrors.deadline && (
+              <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{fieldErrors.deadline}</p>
+            )}
           </div>
           <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={loading}>
             {loading ? (
