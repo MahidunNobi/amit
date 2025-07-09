@@ -59,3 +59,28 @@ export async function POST(req: NextRequest) {
   }
   return NextResponse.json({ team }, { status: 201 });
 } 
+
+export async function DELETE(req: NextRequest) {
+  await dbConnect();
+  const session = await getServerSession(authOptions);
+  if (!session || session.accountType !== 'company') {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+  const { teamId } = await req.json();
+  if (!teamId) {
+    return NextResponse.json({ message: 'Team ID is required' }, { status: 400 });
+  }
+  // Find the team and its employees
+  const team = await Team.findById(teamId);
+  if (!team) {
+    return NextResponse.json({ message: 'Team not found' }, { status: 404 });
+  }
+  // Remove team assignment from employees
+  await CompanyUser.updateMany(
+    { _id: { $in: team.employees } },
+    { $unset: { team: "" } }
+  );
+  // Delete the team
+  await Team.findByIdAndDelete(teamId);
+  return NextResponse.json({ message: 'Team deleted successfully' });
+} 

@@ -22,6 +22,7 @@ export default function TeamsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -39,6 +40,24 @@ export default function TeamsPage() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [session, status, router]);
+
+  const handleDelete = async (teamId: string) => {
+    if (!window.confirm("Are you sure you want to delete this team?")) return;
+    setDeletingId(teamId);
+    try {
+      const res = await fetch("/api/company/teams", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teamId }),
+      });
+      if (!res.ok) throw new Error("Failed to delete team");
+      setTeams((prev) => prev.filter((t) => t._id !== teamId));
+    } catch (err: any) {
+      setError(err.message || "Failed to delete team");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -60,6 +79,7 @@ export default function TeamsPage() {
             <tr>
               <th scope="col" className="px-6 py-3">Team Name</th>
               <th scope="col" className="px-6 py-3">Employees</th>
+              <th scope="col" className="px-6 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -89,6 +109,15 @@ export default function TeamsPage() {
                   ) : (
                     <span className="text-gray-400">No employees</span>
                   )}
+                </td>
+                <td className="px-6 py-4">
+                  <button
+                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50 cursor-pointer"
+                    onClick={() => handleDelete(team._id)}
+                    disabled={deletingId === team._id}
+                  >
+                    {deletingId === team._id ? "Deleting..." : "Delete"}
+                  </button>
                 </td>
               </tr>
             ))}
