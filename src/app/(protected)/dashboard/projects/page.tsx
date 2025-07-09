@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ITeam } from "@/models/Team";
 
 interface Employee {
   _id: string;
@@ -15,7 +16,7 @@ interface Project {
   name: string;
   details: string;
   deadline: string;
-  employees: Employee[];
+  team: ITeam;
 }
 
 export default function CompanyProjectsPage() {
@@ -36,6 +37,7 @@ export default function CompanyProjectsPage() {
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to fetch projects");
         const data = await res.json();
+        console.log(data);
         setProjects(data.projects);
       })
       .catch((err) => setError(err.message))
@@ -44,7 +46,6 @@ export default function CompanyProjectsPage() {
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
-console.log(projects)
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -60,10 +61,18 @@ console.log(projects)
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-              <th scope="col" className="px-6 py-3">Project Name</th>
-              <th scope="col" className="px-6 py-3">Details</th>
-              <th scope="col" className="px-6 py-3">Deadline</th>
-              <th scope="col" className="px-6 py-3">Employees</th>
+              <th scope="col" className="px-6 py-3">
+                Project Name
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Details
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Deadline
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Team
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -79,21 +88,18 @@ console.log(projects)
                   {project.name}
                 </th>
                 <td className="px-6 py-4">{project.details}</td>
-                <td className="px-6 py-4">{new Date(project.deadline).toLocaleDateString()}</td>
                 <td className="px-6 py-4">
-                  {project.employees && project.employees.length > 0 ? (
+                  {new Date(project.deadline).toLocaleDateString()}
+                </td>
+                <td className="px-6 py-4">
+                  {project.team ? (
                     <div className="flex flex-wrap gap-1">
-                      {project.employees.map((emp) => (
-                        <span
-                          key={emp._id}
-                          className="inline-block bg-blue-600 dark:bg-blue-800 text-white rounded px-2 py-1 text-xs"
-                        >
-                          {emp.firstName} {emp.lastName}
-                        </span>
-                      ))}
+                      <span className="inline-block bg-blue-600 dark:bg-blue-800 text-white rounded px-2 py-1 text-xs">
+                        {project.team.name}
+                      </span>
                     </div>
                   ) : (
-                    <span className="text-gray-400">No employees</span>
+                    <span className="text-gray-400">No Team</span>
                   )}
                 </td>
               </tr>
@@ -103,4 +109,4 @@ console.log(projects)
       </div>
     </div>
   );
-} 
+}
