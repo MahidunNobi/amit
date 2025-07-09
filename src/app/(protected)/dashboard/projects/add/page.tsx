@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Label, TextInput, Button, Alert, Card, Spinner, Textarea } from "flowbite-react";
+import { Label, TextInput, Button, Alert, Card, Spinner, Textarea, Select } from "flowbite-react";
 import { validateName } from "@/lib/nameValidation";
 import { Modal, Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell } from "flowbite-react";
 import { HiUserAdd, HiUserRemove } from "react-icons/hi";
@@ -19,47 +19,22 @@ export default function AddProjectPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const [fieldErrors, setFieldErrors] = useState<{ name?: string; details?: string; deadline?: string; employees?: string; common?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; details?: string; deadline?: string; team?: string; common?: string }>({});
 
-  // Employee selection state
-  const [employeesModalOpen, setEmployeesModalOpen] = useState(false);
-  const [companyUsers, setCompanyUsers] = useState<any[]>([]);
-  const [selectedEmployees, setSelectedEmployees] = useState<any[]>([]);
-  const [usersLoading, setUsersLoading] = useState(false);
-  const [usersError, setUsersError] = useState("");
-  console.log(companyUsers)
-  // Fetch company users when modal opens
-  const fetchCompanyUsers = async () => {
-    setUsersLoading(true);
-    setUsersError("");
-    try {
-      const res = await fetch("/api/company/users");
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to fetch users");
-      setCompanyUsers(data.users);
-    } catch (err: any) {
-      setUsersError(err.message || "Error fetching users");
-    } finally {
-      setUsersLoading(false);
-    }
-  };
+  // Team selection state
+  const [teams, setTeams] = useState<any[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState<string>("");
 
-  const openEmployeesModal = () => {
-    setEmployeesModalOpen(true);
-    if (companyUsers.length === 0) fetchCompanyUsers();
-  };
-
-  const closeEmployeesModal = () => setEmployeesModalOpen(false);
-
-  const handleAddEmployee = (user: any) => {
-    if (!selectedEmployees.some((u) => u._id === user._id)) {
-      setSelectedEmployees([...selectedEmployees, user]);
-    }
-  };
-
-  const handleRemoveEmployee = (user: any) => {
-    setSelectedEmployees(selectedEmployees.filter((u) => u._id !== user._id));
-  };
+  useEffect(() => {
+    // Fetch teams for the dropdown
+    fetch("/api/company/teams")
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Failed to fetch teams");
+        const data = await res.json();
+        setTeams(data.teams);
+      })
+      .catch(() => setTeams([]));
+  }, []);
 
   if (status === "loading") return <div>Loading...</div>;
   if (!session || session.accountType !== "company") {
@@ -71,7 +46,7 @@ export default function AddProjectPage() {
     setFieldErrors({});
     setError("");
     let hasError = false;
-    const newErrors: { name?: string; details?: string; deadline?: string; employees?: string; common?: string } = {};
+    const newErrors: { name?: string; details?: string; deadline?: string; team?: string; common?: string } = {};
     // Validate name
     const nameMsg = validateName(name);
     if (nameMsg) {
@@ -86,8 +61,8 @@ export default function AddProjectPage() {
       newErrors.deadline = "Deadline is required.";
       hasError = true;
     }
-    if (selectedEmployees.length === 0) {
-      newErrors.employees = "At least one employee is required.";
+    if (!selectedTeam) {
+      newErrors.team = "Team is required.";
       hasError = true;
     }
     if (hasError) {
@@ -102,7 +77,7 @@ export default function AddProjectPage() {
         name,
         details,
         deadline,
-        employees: selectedEmployees.map((u) => u._id),
+        team: selectedTeam,
       }),
     });
     setLoading(false);
@@ -113,7 +88,7 @@ export default function AddProjectPage() {
     }
     router.push("/dashboard/projects");
   };
-
+console.log(selectedTeam)
   return (
     <div className="flex items-center justify-center min-h-screen">
       <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
@@ -164,22 +139,21 @@ export default function AddProjectPage() {
             )}
           </div>
           <div>
-            <Label color={fieldErrors.employees ? "failure" : undefined}>Employees</Label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {selectedEmployees.map((user) => (
-                <span key={user._id} className="flex items-center bg-gray-600 rounded px-2 py-1 text-xs">
-                  {user.firstName} {user.lastName}
-                  <button type="button" className="ml-1 text-red-500 cursor-pointer" onClick={() => handleRemoveEmployee(user)} title="Remove">
-                    <HiUserRemove />
-                  </button>
-                </span>
+            <Label htmlFor="team" color={fieldErrors.team ? "failure" : undefined}>Team</Label>
+            <Select
+              id="team"
+              value={selectedTeam}
+              onChange={e => setSelectedTeam(e.target.value)}
+              color={fieldErrors.team ? "failure" : undefined}
+              required
+            >
+              <option value="">Select a team</option>
+              {teams.map((team) => (
+                <option key={team._id} value={team._id}>{team.name}</option>
               ))}
-              <Button type="button" size="xs" color="alternative" onClick={openEmployeesModal} className="cursor-pointer">
-                <HiUserAdd className="mr-1" /> Add employees
-              </Button>
-            </div>
-            {fieldErrors.employees && (
-              <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{fieldErrors.employees}</p>
+            </Select>
+            {fieldErrors.team && (
+              <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>{fieldErrors.team}</p>
             )}
           </div>
           <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={loading}>
@@ -191,51 +165,6 @@ export default function AddProjectPage() {
           </Button>
         </form>
       </Card>
-      {/* Employee selection modal */}
-      <Modal show={employeesModalOpen} onClose={closeEmployeesModal} size="lg" popup>
-        <div className="p-6 bg-white dark:bg-gray-900 rounded-lg">
-          <h3 className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-100">Select Employees</h3>
-          {usersLoading ? (
-            <div className="text-center py-4 text-gray-700 dark:text-gray-200">Loading users...</div>
-          ) : usersError ? (
-            <div className="text-center text-red-500 py-4">{usersError}</div>
-          ) : (
-            <Table className="bg-white dark:bg-gray-800 rounded-lg relative overflow-hidden">
-              <TableHead className="bg-gray-100 dark:bg-gray-800 *:px-3">
-                <TableHeadCell className="text-gray-700 dark:text-gray-200">Name</TableHeadCell>
-                <TableHeadCell className="text-gray-700 dark:text-gray-200">Email</TableHeadCell>
-                <TableHeadCell className="text-gray-700 dark:text-gray-200">Add</TableHeadCell>
-              </TableHead>
-              <TableBody>
-             
-                {companyUsers.map((user) => (
-                  <TableRow
-                    key={user._id}
-                    className={
-                      selectedEmployees.some((u) => u._id === user._id)
-                        ? "bg-green-100 dark:bg-green-900 *:px-3"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-700 *:px-3"
-                    }
-                  >
-                    <TableCell className="text-gray-800 dark:text-gray-100">{user.firstName} {user.lastName}</TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-300">{user.email}</TableCell>
-                    <TableCell>
-                      {selectedEmployees.some((u) => u._id === user._id) ? (
-                        <Button size="xs" color="success" disabled className="bg-green-500 dark:bg-green-700 text-white cursor-pointer">Added</Button>
-                      ) : (
-                        <Button size="xs" color="info" onClick={() => handleAddEmployee(user)} className="bg-blue-500 dark:bg-blue-700 text-white cursor-pointer">Add</Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-          <div className="flex justify-end mt-4">
-            <Button color="gray" onClick={closeEmployeesModal} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-pointer">Done</Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 } 

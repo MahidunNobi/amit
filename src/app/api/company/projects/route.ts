@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   }
   const projects = await Project.find({ company: company._id })
     .sort({ createdAt: -1 })
-    .populate({ path: 'employees', select: 'firstName lastName' });
+    .populate({ path: 'team', populate: { path: 'employees', select: 'firstName lastName' } });
   return NextResponse.json({ projects });
 }
 
@@ -31,19 +31,16 @@ export async function POST(req: NextRequest) {
   if (!company) {
     return NextResponse.json({ message: 'Company not found' }, { status: 404 });
   }
-  const { name, details, deadline, employees } = await req.json();
-  if (!name || !details || !deadline) {
+  const { name, details, deadline, team } = await req.json();
+  if (!name || !details || !deadline || !team) {
     return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
-  }
-  if (!Array.isArray(employees) || employees.length === 0) {
-    return NextResponse.json({ message: 'At least one employee is required' }, { status: 400 });
   }
   const project = await Project.create({
     name,
     details,
     deadline,
     company: company._id,
-    employees,
+    team,
   });
   return NextResponse.json({ project }, { status: 201 });
 } 

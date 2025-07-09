@@ -5,7 +5,7 @@ export interface IProject extends Document {
   details: string;
   deadline: Date;
   company: mongoose.Types.ObjectId;
-  employees: mongoose.Types.ObjectId[];
+  team: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,7 +15,7 @@ const ProjectSchema = new Schema<IProject>({
   details: { type: String, required: true },
   deadline: { type: Date, required: true },
   company: { type: Schema.Types.ObjectId, ref: 'Company', required: true },
-  employees: [{ type: Schema.Types.ObjectId, ref: 'CompanyUser', required: true }],
+  team: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
 }, { timestamps: true });
 
 export default models.Project || mongoose.model<IProject>('Project', ProjectSchema); 
