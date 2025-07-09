@@ -70,8 +70,7 @@ export default function CompanyProjectsPage() {
     fetch("/api/company/projects")
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to fetch projects");
-        const data = await res.json();
-        console.log(data);
+        const data = await res.json();        
         setProjects(data.projects);
       })
       .catch((err) => setError(err.message))

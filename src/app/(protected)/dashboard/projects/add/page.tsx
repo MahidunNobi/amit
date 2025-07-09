@@ -88,7 +88,6 @@ export default function AddProjectPage() {
     }
     router.push("/dashboard/projects");
   };
-console.log(selectedTeam)
   return (
     <div className="flex items-center justify-center min-h-screen">
       <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
