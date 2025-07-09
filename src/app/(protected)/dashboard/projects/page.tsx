@@ -4,11 +4,18 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+interface Employee {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 interface Project {
   _id: string;
   name: string;
   details: string;
   deadline: string;
+  employees: Employee[];
 }
 
 export default function CompanyProjectsPage() {
@@ -37,7 +44,7 @@ export default function CompanyProjectsPage() {
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
-
+console.log(projects)
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -56,6 +63,7 @@ export default function CompanyProjectsPage() {
               <th scope="col" className="px-6 py-3">Project Name</th>
               <th scope="col" className="px-6 py-3">Details</th>
               <th scope="col" className="px-6 py-3">Deadline</th>
+              <th scope="col" className="px-6 py-3">Employees</th>
             </tr>
           </thead>
           <tbody>
@@ -72,6 +80,22 @@ export default function CompanyProjectsPage() {
                 </th>
                 <td className="px-6 py-4">{project.details}</td>
                 <td className="px-6 py-4">{new Date(project.deadline).toLocaleDateString()}</td>
+                <td className="px-6 py-4">
+                  {project.employees && project.employees.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {project.employees.map((emp) => (
+                        <span
+                          key={emp._id}
+                          className="inline-block bg-blue-600 dark:bg-blue-800 text-white rounded px-2 py-1 text-xs"
+                        >
+                          {emp.firstName} {emp.lastName}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">No employees</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

@@ -15,7 +15,9 @@ export async function GET(req: NextRequest) {
   if (!company) {
     return NextResponse.json({ message: 'Company not found' }, { status: 404 });
   }
-  const projects = await Project.find({ company: company._id }).sort({ createdAt: -1 });
+  const projects = await Project.find({ company: company._id })
+    .sort({ createdAt: -1 })
+    .populate({ path: 'employees', select: 'firstName lastName' });
   return NextResponse.json({ projects });
 }
 
