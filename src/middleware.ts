@@ -4,8 +4,26 @@ import { getToken } from "next-auth/jwt";
 
 // Middleware to handle authentication token validation
 export async function middleware(request: NextRequest) {
-  const tokenData = await getToken({ req: request });
+  const token = await getToken({ req: request });
+  const url = request.nextUrl.clone();
 
+  // Check authentication for all /dashboard routes
+  if (url.pathname.startsWith("/dashboard")) {
+    if (!token) {
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+    // Restrict /dashboard/projects, /dashboard/teams, /dashboard/users to company users only
+    if (
+      (url.pathname.startsWith("/dashboard/projects") ||
+        url.pathname.startsWith("/dashboard/teams") ||
+        url.pathname.startsWith("/dashboard/users")) &&
+      token.accountType !== "company"
+    ) {
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+  }
   return NextResponse.next();
 }
 

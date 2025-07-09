@@ -19,9 +19,7 @@ export default function AddUserPage() {
   const router = useRouter();
 
   if (status === "loading") return <div>Loading...</div>;
-  if (!session || session.accountType !== "company") {
-    return <div>Unauthorized</div>;
-  }
+  if (!session) return <div>Unauthorized</div>;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

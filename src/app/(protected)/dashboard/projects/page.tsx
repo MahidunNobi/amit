@@ -60,13 +60,7 @@ export default function CompanyProjectsPage() {
     setSelectedProjectId(null);
   };
 
-  useEffect(() => {
-    if (status === "loading") return;
-    if (!session || session.accountType !== "company") {
-      setError("Unauthorized");
-      router.replace("/dashboard");
-      return;
-    }
+  useEffect(() => {    
     fetch("/api/company/projects")
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to fetch projects");

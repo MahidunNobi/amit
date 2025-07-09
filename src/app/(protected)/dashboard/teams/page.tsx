@@ -29,11 +29,6 @@ export default function TeamsPage() {
 
   useEffect(() => {
     if (status === "loading") return;
-    if (!session || session.accountType !== "company") {
-      setError("Unauthorized");
-      router.replace("/dashboard");
-      return;
-    }
     fetch("/api/company/teams")
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to fetch teams");
@@ -42,7 +37,7 @@ export default function TeamsPage() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [session, status, router]);
+  }, [status]);
 
   const handleDeleteClick = (teamId: string) => {
     setSelectedTeamId(teamId);

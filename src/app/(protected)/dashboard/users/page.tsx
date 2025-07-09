@@ -25,13 +25,9 @@ export default function CompanyUsersPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  if (status === "loading") return;
+  if (!session) return <div>Unauthorized</div>;
   useEffect(() => {
-    if (status === "loading") return;
-    if (!session || session.accountType !== "company") {
-      setError("Unauthorized");
-      router.replace("/dashboard");
-      return;
-    }
     fetch("/api/company/users")
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to fetch users");
