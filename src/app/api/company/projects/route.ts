@@ -36,6 +36,11 @@ export async function POST(req: NextRequest) {
   if (!name || !details || !deadline || !team) {
     return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
   }
+  // Check if the team is already assigned to another project
+  const existingProject = await Project.findOne({ team });
+  if (existingProject) {
+    return NextResponse.json({ message: 'This team is already assigned to another project.' }, { status: 400 });
+  }
   try {
     // Create the project
     const project = await Project.create({
