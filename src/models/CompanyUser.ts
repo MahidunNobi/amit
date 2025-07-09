@@ -34,6 +34,10 @@ const CompanyUserSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  team: {
+    type: String,
+    default: null,
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "companies",
