@@ -62,3 +62,17 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }  } 
+
+export async function DELETE(req: NextRequest) {
+  await dbConnect();
+  const session = await getServerSession(authOptions);
+  if (!session || session.accountType !== 'company') {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+  const { projectId } = await req.json();
+  if (!projectId) {
+    return NextResponse.json({ message: 'Project ID is required' }, { status: 400 });
+  }
+  await Project.findByIdAndDelete(projectId);
+  return NextResponse.json({ message: 'Project deleted successfully' });
+} 
