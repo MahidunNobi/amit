@@ -27,6 +27,9 @@ const DashboardSidebar = () => {
                 <SidebarItem as={Link} href="/dashboard/users" icon={HiUsers}>
                   Company Users
                 </SidebarItem>
+                <SidebarItem as={Link} href="/dashboard/teams" icon={HiUsers}>
+                  Teams
+                </SidebarItem>
                 <SidebarItem as={Link} href="/dashboard/projects" icon={HiCog}>
                   Company Projects
                 </SidebarItem>
