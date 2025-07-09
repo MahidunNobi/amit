@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Button, Modal } from "flowbite-react";
 
 interface Employee {
   _id: string;
@@ -23,6 +24,8 @@ export default function TeamsPage() {
   const [error, setError] = useState("");
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -41,22 +44,34 @@ export default function TeamsPage() {
       .finally(() => setLoading(false));
   }, [session, status, router]);
 
-  const handleDelete = async (teamId: string) => {
-    if (!window.confirm("Are you sure you want to delete this team?")) return;
-    setDeletingId(teamId);
+  const handleDeleteClick = (teamId: string) => {
+    setSelectedTeamId(teamId);
+    setModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedTeamId) return;
+    setDeletingId(selectedTeamId);
+    setModalOpen(false);
     try {
       const res = await fetch("/api/company/teams", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teamId }),
+        body: JSON.stringify({ teamId: selectedTeamId }),
       });
       if (!res.ok) throw new Error("Failed to delete team");
-      setTeams((prev) => prev.filter((t) => t._id !== teamId));
+      setTeams((prev) => prev.filter((t) => t._id !== selectedTeamId));
     } catch (err: any) {
       setError(err.message || "Failed to delete team");
     } finally {
       setDeletingId(null);
+      setSelectedTeamId(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setModalOpen(false);
+    setSelectedTeamId(null);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -113,7 +128,7 @@ export default function TeamsPage() {
                 <td className="px-6 py-4">
                   <button
                     className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50 cursor-pointer"
-                    onClick={() => handleDelete(team._id)}
+                    onClick={() => handleDeleteClick(team._id)}
                     disabled={deletingId === team._id}
                   >
                     {deletingId === team._id ? "Deleting..." : "Delete"}
@@ -124,6 +139,36 @@ export default function TeamsPage() {
           </tbody>
         </table>
       </div>
+      <Modal show={modalOpen} onClose={handleCancelDelete} popup>
+        <div className="text-center p-6">
+          <svg
+            aria-hidden="true"
+            className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.054 0 1.918-.816 1.995-1.85l.007-.15V6c0-1.054-.816-1.918-1.85-1.995L19 4H5c-1.054 0-1.918.816-1.995 1.85L3 6v12c0 1.054.816 1.918 1.85 1.995L5 20zm7-8V9a4 4 0 10-8 0v3m8 0v3m0 0a4 4 0 108 0v-3m-8 0V9a4 4 0 018 0v3"
+            />
+          </svg>
+          <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+            Are you sure you want to delete this team?
+          </h3>
+          <div className="flex justify-center gap-4">
+            <Button color="failure" onClick={handleConfirmDelete} disabled={!!deletingId} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50 cursor-pointer">
+              {deletingId ? "Deleting..." : "Yes, delete"}
+            </Button>
+            <Button color="gray" onClick={handleCancelDelete} disabled={!!deletingId}>
+              No, cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 } 
