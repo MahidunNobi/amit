@@ -149,7 +149,7 @@ export default function SignupPage() {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <style>{`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
-      <Card className="w-full max-w-sm p-4">
+      <Card className="w-full max-w-2xl p-4"> {/* Increased max width */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <h1 className="text-2xl font-bold text-center mb-4">Sign Up</h1>
           {error.common && (
@@ -158,127 +158,151 @@ export default function SignupPage() {
             </Alert>
           )}
           {success && <Alert color="success">{success}</Alert>}
-          <div>
-            <Label
-              htmlFor="companyName"
-              color={error.companyName ? "failure" : undefined}
-            >
-              Company Name
-            </Label>
-            <TextInput
-              id="companyName"
-              type="text"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              color={error.companyName ? "failure" : undefined}
-              placeholder="Company Name"
-            />
-            {error.companyName && (
-              <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>
-                {error.companyName}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label
-              htmlFor="address"
-              color={error.address ? "failure" : undefined}
-            >
-              Address
-            </Label>
-            <TextInput
-              id="address"
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              color={error.address ? "failure" : undefined}
-              placeholder="Address"
-            />
-            {error.address && (
-              <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>
-                {error.address}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label
-              htmlFor="phoneNumber"
-              color={error.phoneNumber ? "failure" : undefined}
-            >
-              Phone Number
-            </Label>
-            
-            <PhoneInput
-              placeholder="Enter phone number"
-              value={phoneNumber}
-              onChange={(value) => setPhoneNumber(value?.toString() || "")}
-              className="[&>input]:block [&>input]:w-full [&>input]:border [&>input]:focus:outline-none [&>input]:focus:ring-1 [&>input]:disabled:cursor-not-allowed [&>input]:disabled:opacity-50 [&>input]:border-gray-300 [&>input]:bg-gray-50 [&>input]:text-gray-900 [&>input]:placeholder-gray-500 [&>input]:focus:border-primary-500 [&>input]:focus:ring-primary-500 [&>input]:dark:border-gray-600 [&>input]:dark:bg-gray-700 [&>input]:dark:text-white [&>input]:dark:placeholder-gray-400 [&>input]:dark:focus:border-primary-500 [&>input]:dark:focus:ring-primary-500 [&>input]:p-2.5 [&>input]:text-sm [&>input]:rounded-lg"
-              />
-          </div>
-          <div>
-            <Label htmlFor="website">Website</Label>
-            <TextInput
-              id="website"
-              type="text"
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* 2-column layout */}
+            {/* Left Column */}
+            <div className="space-y-4">
+              <div>
+                <Label
+                  htmlFor="companyName"
+                  color={error.companyName ? "failure" : undefined}
+                >
+                  Company Name
+                </Label>
+                <TextInput
+                  id="companyName"
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  color={error.companyName ? "failure" : undefined}
+                  placeholder="Company Name"
+                />
+                {error.companyName && (
+                  <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>
+                    {error.companyName}
+                  </p>
+                )}
+              </div>
               
-              placeholder="Website (optional)"
-            />
-          </div>
-          <div>
-            <Label htmlFor="email" color={error.email ? "failure" : undefined}>
-              Email
-            </Label>
-            <TextInput
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              color={error.email ? "failure" : undefined}
-              placeholder="Email"
-            />
-            {error.email && (
-              <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>
-                {error.email}
-              </p>
-            )}
-          </div>
-          <PasswordInput
-            id="password"
-            value={password}
-            onChange={handlePasswordChange}
-            label="Password"
-            placeholder="Password"
-            error={error.password}
-          />
-          {password && (
-            <div>
-              <p style={{ color: strength.color }}>{strength.label}</p>
-              <div
-                style={{
-                  height: "5px",
-                  backgroundColor: strength.color,
-                  width: `${(strength.score / 5) * 100}%`,
-                }}
-              />
+              <div>
+                <Label
+                  htmlFor="address"
+                  color={error.address ? "failure" : undefined}
+                >
+                  Address
+                </Label>
+                <TextInput
+                  id="address"
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  color={error.address ? "failure" : undefined}
+                  placeholder="Address"
+                />
+                {error.address && (
+                  <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>
+                    {error.address}
+                  </p>
+                )}
+              </div>
+              
+              <div>
+                <Label
+                  htmlFor="phoneNumber"
+                  color={error.phoneNumber ? "failure" : undefined}
+                >
+                  Phone Number
+                </Label>
+                <PhoneInput
+                  placeholder="Enter phone number"
+                  value={phoneNumber}
+                  onChange={(value) => setPhoneNumber(value?.toString() || "")}
+                  className="[&>input]:block [&>input]:w-full [&>input]:border [&>input]:focus:outline-none [&>input]:focus:ring-1 [&>input]:disabled:cursor-not-allowed [&>input]:disabled:opacity-50 [&>input]:border-gray-300 [&>input]:bg-gray-50 [&>input]:text-gray-900 [&>input]:placeholder-gray-500 [&>input]:focus:border-primary-500 [&>input]:focus:ring-primary-500 [&>input]:dark:border-gray-600 [&>input]:dark:bg-gray-700 [&>input]:dark:text-white [&>input]:dark:placeholder-gray-400 [&>input]:dark:focus:border-primary-500 [&>input]:dark:focus:ring-primary-500 [&>input]:p-2.5 [&>input]:text-sm [&>input]:rounded-lg"
+                />
+                {error.phoneNumber && (
+                  <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>
+                    {error.phoneNumber}
+                  </p>
+                )}
+              </div>
             </div>
-          )}
-          <Button
-            type="submit"
-            color="blue"
-            className="w-full cursor-pointer"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Spinner size="sm" aria-label="Loading" />{" "}
-                <span className="pl-2">Loading...</span>
-              </>
-            ) : (
-              "Sign Up"
-            )}
-          </Button>
+            
+            {/* Right Column */}
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="website">Website</Label>
+                <TextInput
+                  id="website"
+                  type="text"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="Website (optional)"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="email" color={error.email ? "failure" : undefined}>
+                  Email
+                </Label>
+                <TextInput
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  color={error.email ? "failure" : undefined}
+                  placeholder="Email"
+                />
+                {error.email && (
+                  <p className="text-red-500 text-xs mt-1" style={errorFadeIn}>
+                    {error.email}
+                  </p>
+                )}
+              </div>
+              
+              <div>
+                <PasswordInput
+                  id="password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  label="Password"
+                  placeholder="Password"
+                  error={error.password}
+                />
+                {password && (
+                  <div className="mt-2">
+                    <p style={{ color: strength.color }}>{strength.label}</p>
+                    <div
+                      style={{
+                        height: "5px",
+                        backgroundColor: strength.color,
+                        width: `${(strength.score / 5) * 100}%`,
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Full width elements below the columns */}
+          <div className="pt-2">
+            <Button
+              type="submit"
+              color="blue"
+              className="w-full cursor-pointer"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Spinner size="sm" aria-label="Loading" />{" "}
+                  <span className="pl-2">Loading...</span>
+                </>
+              ) : (
+                "Sign Up"
+              )}
+            </Button>
+          </div>
+          
           <p className="text-center mt-4">
             Already have an account?{" "}
             <Link href="/login" className="text-blue-500 hover:underline">
