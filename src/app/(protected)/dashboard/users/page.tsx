@@ -2,7 +2,15 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Label, TextInput, Button, Alert, Card, Spinner, Modal } from "flowbite-react";
+import {
+  Label,
+  TextInput,
+  Button,
+  Alert,
+  Card,
+  Spinner,
+  Modal,
+} from "flowbite-react";
 import PhoneInput from "react-phone-number-input";
 import PasswordInput from "@/components/PasswordInput";
 
@@ -104,7 +112,7 @@ export default function CompanyUsersPage() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Company Users</h1>
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer"
           onClick={handleOpenModal}
         >
           Add User
@@ -119,7 +127,7 @@ export default function CompanyUsersPage() {
               </th>
               <th scope="col" className="px-6 py-3">
                 User Email
-              </th>           
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -142,69 +150,102 @@ export default function CompanyUsersPage() {
       </div>
       {/* Add User Modal */}
       <Modal show={modalOpen} onClose={handleCloseModal} size="md" popup>
-        <div className="w-full max-w-sm p-4 mx-auto">
-          <Card className="w-full p-4 shadow-none">
+        <div className="w-full max-w-sm mx-auto">
+          <Card className="w-full shadow-none bg-transparent! border-none">
             <form onSubmit={handleAddUser} className="space-y-4">
               <h1 className="text-2xl font-bold text-center mb-4">Add User</h1>
               {formError && <Alert color="failure">{formError}</Alert>}
-              <div>
-                <Label htmlFor="firstName">First Name</Label>
-                <TextInput
-                  id="firstName"
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                  placeholder="First Name"
-                />
+              {/* User details inputs in 2-column grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* First Name input */}
+                <div>
+                  {/* User's first name */}
+                  <Label htmlFor="firstName">First Name</Label>
+                  <TextInput
+                    id="firstName"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    placeholder="First Name"
+                  />
+                </div>
+                {/* Last Name input */}
+                <div>
+                  {/* User's last name */}
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <TextInput
+                    id="lastName"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    placeholder="Last Name"
+                  />
+                </div>
+                {/* Number input */}
+
+                <div className="md:col-span-2">
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+
+                  <PhoneInput
+                    placeholder="Enter phone number"
+                    value={number}
+                    onChange={(value) => setNumber(value?.toString() || "")}
+                    className="[&>input]:block [&>input]:w-full [&>input]:border [&>input]:focus:outline-none [&>input]:focus:ring-1 [&>input]:disabled:cursor-not-allowed [&>input]:disabled:opacity-50 [&>input]:border-gray-300 [&>input]:bg-gray-50 [&>input]:text-gray-900 [&>input]:placeholder-gray-500 [&>input]:focus:border-primary-500 [&>input]:focus:ring-primary-500 [&>input]:dark:border-gray-600 [&>input]:dark:bg-gray-700 [&>input]:dark:text-white [&>input]:dark:placeholder-gray-400 [&>input]:dark:focus:border-primary-500 [&>input]:dark:focus:ring-primary-500 [&>input]:p-2.5 [&>input]:text-sm [&>input]:rounded-lg"
+                  />
+                </div>
+                {/* Email input */}
+                <div className="md:col-span-2">
+                  {/* User's email address */}
+                  <Label htmlFor="email">Email</Label>
+                  <TextInput
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="Email"
+                  />
+                </div>
+                {/* Password input */}
+                <div className="md:col-span-2">
+                  {/* User's password */}
+                  <PasswordInput
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    label="Password"
+                    placeholder="Password"
+                    required={true}
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="lastName">Last Name</Label>
-                <TextInput
-                  id="lastName"
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                  placeholder="Last Name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="number">Number</Label>
-                <PhoneInput
-                  placeholder="Enter phone number"
-                  value={number}
-                  onChange={(value) => setNumber(value?.toString() || "")}
-                  className="[&>input]:block [&>input]:w-full [&>input]:border [&>input]:focus:outline-none [&>input]:focus:ring-1 [&>input]:disabled:cursor-not-allowed [&>input]:disabled:opacity-50 [&>input]:border-gray-300 [&>input]:bg-gray-50 [&>input]:text-gray-900 [&>input]:placeholder-gray-500 [&>input]:focus:border-primary-500 [&>input]:focus:ring-primary-500 [&>input]:dark:border-gray-600 [&>input]:dark:bg-gray-700 [&>input]:dark:text-white [&>input]:dark:placeholder-gray-400 [&>input]:dark:focus:border-primary-500 [&>input]:dark:focus:ring-primary-500 [&>input]:p-2.5 [&>input]:text-sm [&>input]:rounded-lg"
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <TextInput
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="Email"
-                />
-              </div>
-              <PasswordInput
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                label="Password"
-                placeholder="Password"
-                required={true}
-              />
-              <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={formLoading}>
+              <Button
+                type="submit"
+                color="blue"
+                className="w-full cursor-pointer"
+                disabled={formLoading}
+              >
                 {formLoading ? (
-                  <><Spinner size="sm" aria-label="Loading" /> <span className="pl-2">Loading...</span></>
+                  <>
+                    <Spinner size="sm" aria-label="Loading" />{" "}
+                    <span className="pl-2">Loading...</span>
+                  </>
                 ) : (
-                  'Add User'
+                  "Add User"
                 )}
               </Button>
             </form>
+            <Button
+              onClick={() => setModalOpen(false)}
+              type="button"
+              color="red"
+              className="w-full cursor-pointer"
+              disabled={formLoading}
+            >
+              Cancle
+            </Button>
           </Card>
         </div>
       </Modal>
