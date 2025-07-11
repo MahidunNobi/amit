@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Label, TextInput, Button, Alert, Card, Spinner } from 'flowbite-react';
+import { Alert, Card, Spinner, Button } from 'flowbite-react';
 import { validatePassword } from '@/lib/passwordValidation';
 import PasswordInput from "@/components/PasswordInput";
 

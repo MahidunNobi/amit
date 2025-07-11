@@ -2,14 +2,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import {
-  Table,
-  TableHead,
-  TableHeadCell,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "flowbite-react";
 
 interface User {
   _id: string;
@@ -25,9 +17,9 @@ export default function CompanyUsersPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  if (status === "loading") return;
-  if (!session) return <div>Unauthorized</div>;
   useEffect(() => {
+    if (status === "loading") return;
+    if (!session) return;
     fetch("/api/company/users")
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to fetch users");

@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import dbConnect from "@/lib/db";
 import Company from "@/models/Company";
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE() {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.email) {
@@ -14,6 +14,10 @@ export async function DELETE(req: NextRequest) {
     await Company.findOneAndDelete({ email: session.user.email });
     return NextResponse.json({ message: "Account deleted" }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to delete account" }, { status: 500 });
+    console.log(error);
+    return NextResponse.json(
+      { error: "Failed to delete account" },
+      { status: 500 }
+    );
   }
-} 
+}

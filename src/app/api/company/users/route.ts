@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import CompanyUser from "@/models/CompanyUser";
 import Company from "@/models/Company";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 
-export async function GET(req: Request) {
+export async function GET() {
   await dbConnect();
   const session = await getServerSession(authOptions);
   if (!session || session.accountType !== "company") {
@@ -17,6 +17,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Company not found" }, { status: 404 });
   }
   // Find all users with this companyId
-  const users = await CompanyUser.find({ company: company._id }).select("-password");
+  const users = await CompanyUser.find({ company: company._id }).select(
+    "-password"
+  );
   return NextResponse.json({ users });
-} 
+}

@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     company.resetPasswordExpires = undefined;
     await company.save();
     return NextResponse.json({ message: 'Password reset successful.' });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ message: 'An unexpected error occurred.' }, { status: 500 });
   }
 } 

@@ -6,12 +6,6 @@ import Link from "next/link";
 import { ITeam } from "@/models/Team";
 import { Button, Modal } from "flowbite-react";
 
-interface Employee {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-}
 interface Project {
   _id: string;
   name: string;
@@ -47,8 +41,12 @@ export default function CompanyProjectsPage() {
       });
       if (!res.ok) throw new Error("Failed to delete project");
       setProjects((prev) => prev.filter((p) => p._id !== selectedProjectId));
-    } catch (err: any) {
-      setError(err.message || "Failed to delete project");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to delete project");
+      } else {
+        setError("Failed to delete project");
+      }
     } finally {
       setDeletingId(null);
       setSelectedProjectId(null);
@@ -67,7 +65,13 @@ export default function CompanyProjectsPage() {
         const data = await res.json();        
         setProjects(data.projects);
       })
-      .catch((err) => setError(err.message))
+      .catch((err: unknown) => {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Failed to fetch projects");
+        }
+      })
       .finally(() => setLoading(false));
   }, [session, status, router]);
 

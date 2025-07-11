@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Label, TextInput, Button, Alert, Card, Spinner } from "flowbite-react";
-import { FaGoogle } from "react-icons/fa";
 import { validateEmail } from '@/lib/emailValidation';
 import { validatePassword } from '@/lib/passwordValidation';
 import PasswordInput from "@/components/PasswordInput";
@@ -117,7 +116,7 @@ export default function LoginPage() {
             )}
           </Button>
           <p className="text-center mt-4">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-blue-500 hover:underline">
               Sign Up
             </Link>

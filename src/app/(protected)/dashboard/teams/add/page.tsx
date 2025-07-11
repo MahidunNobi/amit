@@ -13,15 +13,14 @@ const errorFadeIn = {
 export default function AddTeamPage() {
   const { data: session, status } = useSession();
   const [name, setName] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [fieldErrors, setFieldErrors] = useState<{ name?: string; employees?: string; common?: string }>({});
 
   // Employee selection state
   const [employeesModalOpen, setEmployeesModalOpen] = useState(false);
-  const [companyUsers, setCompanyUsers] = useState<any[]>([]);
-  const [selectedEmployees, setSelectedEmployees] = useState<any[]>([]);
+  const [companyUsers, setCompanyUsers] = useState<unknown[]>([]);
+  const [selectedEmployees, setSelectedEmployees] = useState<unknown[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState("");
   const [usersInTeams, setUsersInTeams] = useState<string[]>([]);
@@ -62,14 +61,14 @@ export default function AddTeamPage() {
 
   const closeEmployeesModal = () => setEmployeesModalOpen(false);
 
-  const handleAddEmployee = (user: any) => {
-    if (!selectedEmployees.some((u) => u._id === user._id)) {
+  const handleAddEmployee = (user: unknown) => {
+    if (!selectedEmployees.some((u) => (u as any)._id === (user as any)._id)) {
       setSelectedEmployees([...selectedEmployees, user]);
     }
   };
 
-  const handleRemoveEmployee = (user: any) => {
-    setSelectedEmployees(selectedEmployees.filter((u) => u._id !== user._id));
+  const handleRemoveEmployee = (user: unknown) => {
+    setSelectedEmployees(selectedEmployees.filter((u) => (u as any)._id !== (user as any)._id));
   };
 
   if (status === "loading") return <div>Loading...</div>;
@@ -79,8 +78,7 @@ export default function AddTeamPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFieldErrors({});
-    setError("");
+    setFieldErrors({});    
     let hasError = false;
     const newErrors: { name?: string; employees?: string; common?: string } = {};
     if (!name.trim()) {
@@ -101,7 +99,7 @@ export default function AddTeamPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name,
-        employees: selectedEmployees.map((u) => u._id),
+        employees: selectedEmployees.map((u) => (u as any)._id),
       }),
     });
     setLoading(false);
@@ -140,8 +138,8 @@ export default function AddTeamPage() {
             <Label color={fieldErrors.employees ? "failure" : undefined}>Employees</Label>
             <div className="flex flex-wrap gap-2 mb-2">
               {selectedEmployees.map((user) => (
-                <span key={user._id} className="flex items-center bg-gray-600 rounded px-2 py-1 text-xs">
-                  {user.firstName} {user.lastName}
+                <span key={(user as any)._id} className="flex items-center bg-gray-600 rounded px-2 py-1 text-xs">
+                  {(user as any).firstName} {(user as any).lastName}
                   <button type="button" className="ml-1 text-red-500 cursor-pointer" onClick={() => handleRemoveEmployee(user)} title="Remove">
                     <HiUserRemove />
                   </button>
@@ -185,11 +183,11 @@ export default function AddTeamPage() {
         </TableHead>
         <TableBody>
           {companyUsers.map((user) => {
-            const inTeam = usersInTeams.includes(user._id);
-            const alreadySelected = selectedEmployees.some((u) => u._id === user._id);
+            const inTeam = usersInTeams.includes((user as any)._id);
+            const alreadySelected = selectedEmployees.some((u) => (u as any)._id === (user as any)._id);
             return (
               <TableRow
-                key={user._id}
+                key={(user as any)._id}
                 className={
                   inTeam 
                     ? "bg-gray-200 dark:bg-gray-700 *:px-3" 
@@ -198,9 +196,9 @@ export default function AddTeamPage() {
                       : "hover:bg-gray-50 dark:hover:bg-gray-700 *:px-3"
                 }
               >
-                <TableCell className="text-gray-800 dark:text-gray-100">{user.firstName}</TableCell>
-                <TableCell className="text-gray-800 dark:text-gray-100">{user.lastName}</TableCell>
-                <TableCell className="text-gray-600 dark:text-gray-300">{user.email}</TableCell>
+                <TableCell className="text-gray-800 dark:text-gray-100">{(user as any).firstName}</TableCell>
+                <TableCell className="text-gray-800 dark:text-gray-100">{(user as any).lastName}</TableCell>
+                <TableCell className="text-gray-600 dark:text-gray-300">{(user as any).email}</TableCell>
                 <TableCell>
                   <Button
                     size="xs"

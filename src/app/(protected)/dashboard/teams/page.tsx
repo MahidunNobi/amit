@@ -1,9 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Button, Modal } from "flowbite-react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface Employee {
   _id: string;
@@ -18,11 +17,10 @@ interface Team {
 }
 
 export default function TeamsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const router = useRouter();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -32,10 +30,10 @@ export default function TeamsPage() {
     fetch("/api/company/teams")
       .then(async (res) => {
         if (!res.ok) throw new Error("Failed to fetch teams");
-        const data = await res.json();
+        const data: { teams: Team[] } = await res.json();
         setTeams(data.teams);
       })
-      .catch((err) => setError(err.message))
+      .catch((err: unknown) => setError((err as Error).message))
       .finally(() => setLoading(false));
   }, [status]);
 
@@ -56,8 +54,8 @@ export default function TeamsPage() {
       });
       if (!res.ok) throw new Error("Failed to delete team");
       setTeams((prev) => prev.filter((t) => t._id !== selectedTeamId));
-    } catch (err: any) {
-      setError(err.message || "Failed to delete team");
+    } catch (err: unknown) {
+      setError((err as Error).message || "Failed to delete team");
     } finally {
       setDeletingId(null);
       setSelectedTeamId(null);
@@ -87,9 +85,15 @@ export default function TeamsPage() {
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-              <th scope="col" className="px-6 py-3">Team Name</th>
-              <th scope="col" className="px-6 py-3">Employees</th>
-              <th scope="col" className="px-6 py-3">Actions</th>
+              <th scope="col" className="px-6 py-3">
+                Team Name
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Employees
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -155,10 +159,19 @@ export default function TeamsPage() {
             Are you sure you want to delete this team?
           </h3>
           <div className="flex justify-center gap-4">
-            <Button color="failure" onClick={handleConfirmDelete} disabled={!!deletingId} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50 cursor-pointer">
+            <Button
+              color="failure"
+              onClick={handleConfirmDelete}
+              disabled={!!deletingId}
+              className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50 cursor-pointer"
+            >
               {deletingId ? "Deleting..." : "Yes, delete"}
             </Button>
-            <Button color="gray" onClick={handleCancelDelete} disabled={!!deletingId}>
+            <Button
+              color="gray"
+              onClick={handleCancelDelete}
+              disabled={!!deletingId}
+            >
               No, cancel
             </Button>
           </div>
@@ -166,4 +179,4 @@ export default function TeamsPage() {
       </Modal>
     </div>
   );
-} 
+}

@@ -25,7 +25,10 @@ export async function POST(req: Request) {
       message:
         "If a user with that email exists, a password reset link has been sent.",
     });
-  } catch (error) {
-    return NextResponse.json({ message: "An unexpected error occurred." }, { status: 500 });
+  } catch {
+    return NextResponse.json(
+      { message: "An unexpected error occurred." },
+      { status: 500 }
+    );
   }
 }

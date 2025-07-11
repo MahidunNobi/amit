@@ -12,7 +12,6 @@ export default function Dashboard() {
   const [timer, setTimer] = useState(120); // 2 minutes in seconds
   const inactivityTimeout = useRef<NodeJS.Timeout | null>(null);
   const countdownInterval = useRef<NodeJS.Timeout | null>(null);
-  const sessionData = useSession();
   
   // Reset inactivity timer
   const resetInactivityTimer = () => {
@@ -82,7 +81,7 @@ export default function Dashboard() {
 
         {status === "authenticated" && (
           <div>
-            <p className="text-center sm:text-left">Signed in as {session.user?.name}</p>
+            <p className="text-center sm:text-left">Signed in as {session?.user?.name}</p>
             <button
               onClick={() => signOut()}
               className="mt-4 rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto cursor-pointer"

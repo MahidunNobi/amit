@@ -4,8 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Label, TextInput, Button, Alert, Card, Spinner, Textarea, Select } from "flowbite-react";
 import { validateName } from "@/lib/nameValidation";
-import { Modal, Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell } from "flowbite-react";
-import { HiUserAdd, HiUserRemove } from "react-icons/hi";
+import { ITeam } from "@/models/Team";
 
 const errorFadeIn = {
   animation: "fadeIn 0.3s",
@@ -16,13 +15,12 @@ export default function AddProjectPage() {
   const [name, setName] = useState("");
   const [details, setDetails] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [fieldErrors, setFieldErrors] = useState<{ name?: string; details?: string; deadline?: string; team?: string; common?: string }>({});
 
   // Team selection state
-  const [teams, setTeams] = useState<any[]>([]);
+  const [teams, setTeams] = useState<ITeam[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string>("");
 
   useEffect(() => {
@@ -44,7 +42,6 @@ export default function AddProjectPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFieldErrors({});
-    setError("");
     let hasError = false;
     const newErrors: { name?: string; details?: string; deadline?: string; team?: string; common?: string } = {};
     // Validate name
@@ -147,7 +144,7 @@ export default function AddProjectPage() {
               required
             >
               <option value="">Select a team</option>
-              {teams.map((team) => (
+              {teams.map((team:ITeam) => (
                 <option key={team._id} value={team._id}>{team.name}</option>
               ))}
             </Select>

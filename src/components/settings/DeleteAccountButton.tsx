@@ -16,8 +16,8 @@ export default function DeleteAccountButton() {
       if (!res.ok) throw new Error("Failed to delete account");
       setOpen(false);
       await signOut({ callbackUrl: "/login" });
-    } catch (err: any) {
-      setError(err.message || "Error deleting account");
+    } catch (err: unknown) {
+      setError((err as Error).message || "Error deleting account");
     } finally {
       setLoading(false);
     }

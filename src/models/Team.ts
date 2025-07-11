@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, models } from 'mongoose';
 
 export interface ITeam extends Document {
+  _id: string;
   name: string;
   employees: mongoose.Types.ObjectId[];
   createdAt: Date;
