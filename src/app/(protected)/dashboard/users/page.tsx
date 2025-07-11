@@ -2,6 +2,9 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Label, TextInput, Button, Alert, Card, Spinner, Modal } from "flowbite-react";
+import PhoneInput from "react-phone-number-input";
+import PasswordInput from "@/components/PasswordInput";
 
 interface User {
   _id: string;
@@ -15,6 +18,15 @@ export default function CompanyUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  // Add user form state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [number, setNumber] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [formError, setFormError] = useState("");
+  const [formLoading, setFormLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -30,6 +42,60 @@ export default function CompanyUsersPage() {
       .finally(() => setLoading(false));
   }, [session, status, router]);
 
+  const handleOpenModal = () => {
+    setFirstName("");
+    setLastName("");
+    setNumber("");
+    setEmail("");
+    setPassword("");
+    setFormError("");
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleAddUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError("");
+    setFormLoading(true);
+    if (!session) {
+      setFormError("Unauthorized");
+      setFormLoading(false);
+      return;
+    }
+    const res = await fetch("/api/company-user/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        number,
+        companyName: session.user.name,
+        email,
+        password,
+      }),
+    });
+    setFormLoading(false);
+    const data = await res.json();
+    if (!res.ok) {
+      setFormError(data.message || "Something went wrong!");
+      return;
+    }
+    // Refresh users list
+    setModalOpen(false);
+    setLoading(true);
+    fetch("/api/company/users")
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Failed to fetch users");
+        const data = await res.json();
+        setUsers(data.users);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
@@ -39,7 +105,7 @@ export default function CompanyUsersPage() {
         <h1 className="text-2xl font-bold">Company Users</h1>
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={() => router.push("/dashboard/users/add")}
+          onClick={handleOpenModal}
         >
           Add User
         </button>
@@ -74,6 +140,74 @@ export default function CompanyUsersPage() {
           </tbody>
         </table>
       </div>
+      {/* Add User Modal */}
+      <Modal show={modalOpen} onClose={handleCloseModal} size="md" popup>
+        <div className="w-full max-w-sm p-4 mx-auto">
+          <Card className="w-full p-4 shadow-none">
+            <form onSubmit={handleAddUser} className="space-y-4">
+              <h1 className="text-2xl font-bold text-center mb-4">Add User</h1>
+              {formError && <Alert color="failure">{formError}</Alert>}
+              <div>
+                <Label htmlFor="firstName">First Name</Label>
+                <TextInput
+                  id="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  placeholder="First Name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName">Last Name</Label>
+                <TextInput
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                  placeholder="Last Name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="number">Number</Label>
+                <PhoneInput
+                  placeholder="Enter phone number"
+                  value={number}
+                  onChange={(value) => setNumber(value?.toString() || "")}
+                  className="[&>input]:block [&>input]:w-full [&>input]:border [&>input]:focus:outline-none [&>input]:focus:ring-1 [&>input]:disabled:cursor-not-allowed [&>input]:disabled:opacity-50 [&>input]:border-gray-300 [&>input]:bg-gray-50 [&>input]:text-gray-900 [&>input]:placeholder-gray-500 [&>input]:focus:border-primary-500 [&>input]:focus:ring-primary-500 [&>input]:dark:border-gray-600 [&>input]:dark:bg-gray-700 [&>input]:dark:text-white [&>input]:dark:placeholder-gray-400 [&>input]:dark:focus:border-primary-500 [&>input]:dark:focus:ring-primary-500 [&>input]:p-2.5 [&>input]:text-sm [&>input]:rounded-lg"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <TextInput
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Email"
+                />
+              </div>
+              <PasswordInput
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                label="Password"
+                placeholder="Password"
+                required={true}
+              />
+              <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={formLoading}>
+                {formLoading ? (
+                  <><Spinner size="sm" aria-label="Loading" /> <span className="pl-2">Loading...</span></>
+                ) : (
+                  'Add User'
+                )}
+              </Button>
+            </form>
+          </Card>
+        </div>
+      </Modal>
     </div>
   );
 }
