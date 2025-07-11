@@ -175,10 +175,13 @@ export default function AddTeamPage() {
     ) : (
       <Table className="bg-white dark:bg-gray-800 rounded-lg relative overflow-hidden">
         <TableHead className="bg-gray-100 dark:bg-gray-800 *:px-3">
+          <tr>
+
           <TableHeadCell className="text-gray-700 dark:text-gray-200">First Name</TableHeadCell>
           <TableHeadCell className="text-gray-700 dark:text-gray-200">Last Name</TableHeadCell>
           <TableHeadCell className="text-gray-700 dark:text-gray-200">Email</TableHeadCell>
           <TableHeadCell className="text-gray-700 dark:text-gray-200">Add</TableHeadCell>
+          </tr>
         </TableHead>
         <TableBody>
           {companyUsers.map((user) => {
