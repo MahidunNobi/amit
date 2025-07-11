@@ -285,11 +285,11 @@ export default function SignupPage() {
           </div>
           
           {/* Full width elements below the columns */}
-          <div className="pt-2">
+          <div className="pt-2 grid place-items-center">
             <Button
               type="submit"
               color="blue"
-              className="w-full cursor-pointer"
+              className="w-xs cursor-pointer"
               disabled={loading}
             >
               {loading ? (
