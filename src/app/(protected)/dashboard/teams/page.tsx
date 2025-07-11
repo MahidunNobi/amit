@@ -1,8 +1,8 @@
 "use client";
-import { Button, Modal } from "flowbite-react";
+import { Label, TextInput, Button, Alert, Card, Spinner, Modal, Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell } from "flowbite-react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import { HiUserAdd, HiUserRemove } from "react-icons/hi";
 
 interface Employee {
   _id: string;
@@ -24,6 +24,18 @@ export default function TeamsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+
+  // Add team modal state
+  const [addTeamModalOpen, setAddTeamModalOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [addLoading, setAddLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; employees?: string; common?: string }>({});
+  const [employeesModalOpen, setEmployeesModalOpen] = useState(false);
+  const [companyUsers, setCompanyUsers] = useState<any[]>([]);
+  const [selectedEmployees, setSelectedEmployees] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState("");
+  const [usersInTeams, setUsersInTeams] = useState<string[]>([]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -67,6 +79,102 @@ export default function TeamsPage() {
     setSelectedTeamId(null);
   };
 
+  // Add team modal logic
+  const openAddTeamModal = () => {
+    setName("");
+    setFieldErrors({});
+    setSelectedEmployees([]);
+    setAddTeamModalOpen(true);
+  };
+  const closeAddTeamModal = () => setAddTeamModalOpen(false);
+
+  // Employee selection modal logic
+  const fetchCompanyUsers = async () => {
+    setUsersLoading(true);
+    setUsersError("");
+    try {
+      const [usersRes, teamsRes] = await Promise.all([
+        fetch("/api/company/users"),
+        fetch("/api/company/teams")
+      ]);
+      const usersData = await usersRes.json();
+      const teamsData = await teamsRes.json();
+      if (!usersRes.ok) throw new Error(usersData.error || "Failed to fetch users");
+      if (!teamsRes.ok) throw new Error(teamsData.message || "Failed to fetch teams");
+      setCompanyUsers(usersData.users);
+      // Collect all user IDs already in a team
+      const inTeams: string[] = [];
+      for (const team of teamsData.teams) {
+        for (const emp of team.employees) {
+          inTeams.push(emp._id);
+        }
+      }
+      setUsersInTeams(inTeams);
+    } catch (err: any) {
+      setUsersError(err.message || "Error fetching users");
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+  const openEmployeesModal = () => {
+    setEmployeesModalOpen(true);
+    if (companyUsers.length === 0) fetchCompanyUsers();
+  };
+  const closeEmployeesModal = () => setEmployeesModalOpen(false);
+  const handleAddEmployee = (user: any) => {
+    if (!selectedEmployees.some((u) => u._id === user._id)) {
+      setSelectedEmployees([...selectedEmployees, user]);
+    }
+  };
+  const handleRemoveEmployee = (user: any) => {
+    setSelectedEmployees(selectedEmployees.filter((u) => u._id !== user._id));
+  };
+
+  const handleAddTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFieldErrors({});
+    let hasError = false;
+    const newErrors: { name?: string; employees?: string; common?: string } = {};
+    if (!name.trim()) {
+      newErrors.name = "Team name is required.";
+      hasError = true;
+    }
+    if (selectedEmployees.length === 0) {
+      newErrors.employees = "At least one employee is required.";
+      hasError = true;
+    }
+    if (hasError) {
+      setFieldErrors(newErrors);
+      return;
+    }
+    setAddLoading(true);
+    const res = await fetch("/api/company/teams", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        employees: selectedEmployees.map((u) => u._id),
+      }),
+    });
+    setAddLoading(false);
+    const data = await res.json();
+    if (!res.ok) {
+      setFieldErrors({ common: data.message || "Something went wrong!" });
+      return;
+    }
+    setAddTeamModalOpen(false);
+    // Refresh teams list
+    setLoading(true);
+    fetch("/api/company/teams")
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Failed to fetch teams");
+        const data: { teams: Team[] } = await res.json();
+        setTeams(data.teams);
+      })
+      .catch((err: unknown) => setError((err as Error).message))
+      .finally(() => setLoading(false));
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
@@ -74,12 +182,12 @@ export default function TeamsPage() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Teams</h1>
-        <Link
+        <button
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          href={"/dashboard/teams/add"}
+          onClick={openAddTeamModal}
         >
           Create Team
-        </Link>
+        </button>
       </div>
       <div className="relative overflow-x-auto">
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -138,6 +246,144 @@ export default function TeamsPage() {
           </tbody>
         </table>
       </div>
+      {/* Add Team Modal */}
+      <Modal show={addTeamModalOpen} onClose={closeAddTeamModal} size="md" popup>
+        <div className="w-full max-w-lg mx-auto">
+          <Card className="w-full shadow-none bg-transparent! border-none">
+            <form onSubmit={handleAddTeam} className="space-y-4">
+              <h1 className="text-2xl font-bold text-center mb-4">Create Team</h1>
+              {fieldErrors.common && (
+                <Alert color="failure">{fieldErrors.common}</Alert>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Team Name input */}
+                <div className="md:col-span-2">
+                  {/* Team's name */}
+                  <Label htmlFor="name" color={fieldErrors.name ? "failure" : undefined}>Team Name</Label>
+                  <TextInput
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    color={fieldErrors.name ? "failure" : undefined}
+                    placeholder="Team Name"
+                  />
+                  {fieldErrors.name && (
+                    <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>
+                  )}
+                </div>
+                {/* Employees input */}
+                <div className="md:col-span-2">
+                  {/* Team's employees */}
+                  <Label color={fieldErrors.employees ? "failure" : undefined}>Employees</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {selectedEmployees.map((user) => (
+                      <span key={user._id} className="flex items-center bg-gray-600 rounded px-2 py-1 text-xs">
+                        {user.firstName} {user.lastName}
+                        <button type="button" className="ml-1 text-red-500 cursor-pointer" onClick={() => handleRemoveEmployee(user)} title="Remove">
+                          <HiUserRemove />
+                        </button>
+                      </span>
+                    ))}
+                    <Button type="button" size="xs" color="alternative" onClick={openEmployeesModal} className="cursor-pointer">
+                      <HiUserAdd className="mr-1" /> Add employees
+                    </Button>
+                  </div>
+                  {fieldErrors.employees && (
+                    <p className="text-red-500 text-xs mt-1">{fieldErrors.employees}</p>
+                  )}
+                </div>
+              </div>
+              <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={addLoading}>
+                {addLoading ? (
+                  <><Spinner size="sm" aria-label="Loading" /> <span className="pl-2">Loading...</span></>
+                ) : (
+                  'Create Team'
+                )}
+              </Button>
+              <Button
+                onClick={closeAddTeamModal}
+                type="button"
+                color="red"
+                className="w-full cursor-pointer"
+                disabled={addLoading}
+              >
+                Cancel
+              </Button>
+            </form>
+          </Card>
+        </div>
+        {/* Employee selection modal (nested) */}
+        <Modal show={employeesModalOpen} onClose={closeEmployeesModal} size="lg" popup>
+          <div className="p-6 bg-white dark:bg-gray-900 rounded-lg">
+            <h3 className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-100">Select Employees</h3>
+            {usersLoading ? (
+              <div className="text-center py-4 text-gray-700 dark:text-gray-200">Loading users...</div>
+            ) : usersError ? (
+              <div className="text-center text-red-500 py-4">{usersError}</div>
+            ) : (
+              <Table className="bg-white dark:bg-gray-800 rounded-lg relative overflow-hidden">
+                <TableHead className="bg-gray-100 dark:bg-gray-800 *:px-3">
+                  <tr>
+                    <TableHeadCell className="text-gray-700 dark:text-gray-200">First Name</TableHeadCell>
+                    <TableHeadCell className="text-gray-700 dark:text-gray-200">Last Name</TableHeadCell>
+                    <TableHeadCell className="text-gray-700 dark:text-gray-200">Email</TableHeadCell>
+                    <TableHeadCell className="text-gray-700 dark:text-gray-200">Add</TableHeadCell>
+                  </tr>
+                </TableHead>
+                <TableBody>
+                  {companyUsers.map((user) => {
+                    const inTeam = usersInTeams.includes(user._id);
+                    const alreadySelected = selectedEmployees.some((u) => u._id === user._id);
+                    return (
+                      <TableRow
+                        key={user._id}
+                        className={
+                          inTeam
+                            ? "bg-gray-200 dark:bg-gray-700 *:px-3"
+                            : alreadySelected
+                              ? "bg-green-100 dark:bg-green-900 *:px-3"
+                              : "hover:bg-gray-50 dark:hover:bg-gray-700 *:px-3"
+                        }
+                      >
+                        <TableCell className="text-gray-800 dark:text-gray-100">{user.firstName}</TableCell>
+                        <TableCell className="text-gray-800 dark:text-gray-100">{user.lastName}</TableCell>
+                        <TableCell className="text-gray-600 dark:text-gray-300">{user.email}</TableCell>
+                        <TableCell>
+                          <Button
+                            size="xs"
+                            className={
+                              inTeam
+                                ? "bg-gray-400 dark:bg-gray-600 text-white cursor-not-allowed"
+                                : alreadySelected
+                                  ? "bg-green-500 dark:bg-green-700 text-white cursor-pointer"
+                                  : "bg-blue-500 dark:bg-blue-700 text-white cursor-pointer"
+                            }
+                            disabled={inTeam || alreadySelected}
+                            onClick={() => handleAddEmployee(user)}
+                          >
+                            {inTeam ? "In a Team" : alreadySelected ? "Added" : "Add"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+            <div className="flex justify-end mt-4">
+              <Button
+                color="gray"
+                onClick={closeEmployeesModal}
+                className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-pointer"
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      </Modal>
+      {/* Delete Team Modal (existing) */}
       <Modal show={modalOpen} onClose={handleCancelDelete} popup>
         <div className="text-center p-6">
           <svg
