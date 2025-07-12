@@ -10,6 +10,7 @@ import {
   Card,
   Spinner,
   Modal,
+  Select,
 } from "flowbite-react";
 import PhoneInput from "react-phone-number-input";
 import PasswordInput from "@/components/PasswordInput";
@@ -19,6 +20,7 @@ interface User {
   firstName: string;
   lastName: string;
   email: string;
+  role: string;
 }
 
 export default function CompanyUsersPage() {
@@ -33,6 +35,7 @@ export default function CompanyUsersPage() {
   const [number, setNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("General");
   const [formError, setFormError] = useState("");
   const [formLoading, setFormLoading] = useState(false);
   const router = useRouter();
@@ -56,6 +59,7 @@ export default function CompanyUsersPage() {
     setNumber("");
     setEmail("");
     setPassword("");
+    setRole("General");
     setFormError("");
     setModalOpen(true);
   };
@@ -83,6 +87,7 @@ export default function CompanyUsersPage() {
         companyName: session.user.name,
         email,
         password,
+        role,
       }),
     });
     setFormLoading(false);
@@ -102,6 +107,29 @@ export default function CompanyUsersPage() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+  };
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      const res = await fetch("/api/company/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, role: newRole }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to update role");
+      }
+
+      // Update the user in the local state
+      setUsers(users.map(user => 
+        user._id === userId ? { ...user, role: newRole } : user
+      ));
+    } catch (error) {
+      console.error("Error updating role:", error);
+      setError(error instanceof Error ? error.message : "Failed to update role");
+    }
   };
 
   if (loading) return <div>Loading...</div>;
@@ -128,6 +156,9 @@ export default function CompanyUsersPage() {
               <th scope="col" className="px-6 py-3">
                 User Email
               </th>
+              <th scope="col" className="px-6 py-3">
+                Role
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -143,6 +174,19 @@ export default function CompanyUsersPage() {
                   {user.firstName} {user.lastName}
                 </th>
                 <td className="px-6 py-4">{user.email}</td>
+                <td className="px-6 py-4">
+                  <Select
+                    value={user.role}
+                    onChange={(e) => handleRoleChange(user._id, e.target.value)}
+                    className="w-40 cursor-pointer"
+                  >
+                    <option value="General">General</option>
+                    <option value="Developer">Developer</option>
+                    <option value="Project Manager">Project Manager</option>
+                    <option value="QA">QA</option>
+                    <option value="Designer">Designer</option>
+                  </Select>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -207,6 +251,23 @@ export default function CompanyUsersPage() {
                     required
                     placeholder="Email"
                   />
+                </div>
+                {/* Role input */}
+                <div className="md:col-span-2">
+                  {/* User's role */}
+                  <Label htmlFor="role">Role</Label>
+                  <Select
+                    id="role"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    required
+                  >
+                    <option value="General">General</option>
+                    <option value="Developer">Developer</option>
+                    <option value="Project Manager">Project Manager</option>
+                    <option value="QA">QA</option>
+                    <option value="Designer">Designer</option>
+                  </Select>
                 </div>
                 {/* Password input */}
                 <div className="md:col-span-2">

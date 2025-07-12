@@ -7,7 +7,7 @@ import Company from '@/models/Company';
 export async function POST(req: Request) {
   try {
     await dbConnect();
-    const { firstName, lastName, number, companyName, email, password } = await req.json();
+    const { firstName, lastName, number, companyName, email, password, role } = await req.json();
     console.log(companyName);
     const company = await Company.findOne({ companyName: { $regex: new RegExp(`^${companyName}$`, "i") } });
     if (!company) {
@@ -29,6 +29,7 @@ export async function POST(req: Request) {
       email,
       password: hashedPassword,
       company: company._id,
+      role: role || "General",
     });
 
     await user.save();

@@ -106,6 +106,7 @@ export const authOptions: AuthOptions = {
             password,
             company: company._id,
             accountType: "user",
+            role: "General",
           });
           await companyUser.save();
         }
