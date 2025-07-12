@@ -38,6 +38,11 @@ const CompanyUserSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  role: {
+    type: String,
+    enum: ["General", "Developer", "Project Manager", "QA", "Designer"],
+    default: "General",
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "companies",
