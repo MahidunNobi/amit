@@ -22,11 +22,23 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Find the team the user belongs to
+    // Find the team the user belongs to using the new teamMembers structure
     const team = await Team.findOne({ 
-      employees: user._id,
+      "teamMembers.employee": user._id,
       company: user.company 
+    }).populate({
+      path: "teamMembers.employee",
+      select: "firstName lastName email"
     });
+
+    // Find the user's team role
+    let teamRole = null;
+    if (team) {
+      const teamMember = team.teamMembers.find((member: any) => 
+        member.employee._id.toString() === user._id.toString()
+      );
+      teamRole = teamMember ? teamMember.role : null;
+    }
 
     // Find the project assigned to the user's team
     let project = null;
@@ -42,6 +54,7 @@ export async function GET() {
       email: user.email,
       role: user.role,
       team: team ? team.name : null,
+      teamRole: teamRole,
       project: project ? {
         name: project.name,
         details: project.details,

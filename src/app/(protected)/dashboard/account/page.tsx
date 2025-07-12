@@ -11,6 +11,7 @@ interface UserAccount {
   email: string;
   role: string;
   team: string | null;
+  teamRole: string | null;
   project?: {
     name: string;
     details: string;
@@ -98,7 +99,7 @@ export default function AccountPage() {
         <Card className="hover:shadow-lg transition-shadow">
           <div className="flex items-center gap-3 mb-4">
             <HiCog className="text-xl text-green-600" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Role</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Company Role</h2>
           </div>
           <div className="space-y-3">
             <div>
@@ -116,18 +117,30 @@ export default function AccountPage() {
         <Card className="hover:shadow-lg transition-shadow">
           <div className="flex items-center gap-3 mb-4">
             <HiUsers className="text-xl text-purple-600" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Team</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Team Information</h2>
           </div>
           <div className="space-y-3">
             {userAccount.team ? (
-              <div>
-                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Current Team</label>
-                <div className="mt-2">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                    {userAccount.team}
-                  </span>
+              <>
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Team Name</label>
+                  <div className="mt-2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                      {userAccount.team}
+                    </span>
+                  </div>
                 </div>
-              </div>
+                {userAccount.teamRole && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Team Role</label>
+                    <div className="mt-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        {userAccount.teamRole}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
               <div>
                 <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Current Team</label>
