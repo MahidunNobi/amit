@@ -39,6 +39,16 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+  
+  // Verify that the team belongs to this company
+  const teamExists = await Team.findOne({ _id: team, company: company._id });
+  if (!teamExists) {
+    return NextResponse.json(
+      { message: "Team not found or does not belong to this company" },
+      { status: 400 }
+    );
+  }
+  
   // Check if the team is already assigned to another project
   const existingProject = await Project.findOne({ team });
   if (existingProject) {
@@ -81,6 +91,12 @@ export async function DELETE(req: NextRequest) {
   if (!session || session.accountType !== "company") {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+  
+  const company = await Company.findOne({ email: session.user.email });
+  if (!company) {
+    return NextResponse.json({ message: "Company not found" }, { status: 404 });
+  }
+  
   const { projectId } = await req.json();
   if (!projectId) {
     return NextResponse.json(
@@ -88,6 +104,13 @@ export async function DELETE(req: NextRequest) {
       { status: 400 }
     );
   }
+  
+  // Verify that the project belongs to this company
+  const project = await Project.findOne({ _id: projectId, company: company._id });
+  if (!project) {
+    return NextResponse.json({ message: "Project not found" }, { status: 404 });
+  }
+  
   await Project.findByIdAndDelete(projectId);
   return NextResponse.json({ message: "Project deleted successfully" });
 }
