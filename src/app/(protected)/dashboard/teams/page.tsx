@@ -53,6 +53,17 @@ export default function TeamsPage() {
   const [usersError, setUsersError] = useState("");
   const [usersInTeams, setUsersInTeams] = useState<string[]>([]);
 
+  // Manage team modal state
+  const [manageTeamModalOpen, setManageTeamModalOpen] = useState(false);
+  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editTeamMembers, setEditTeamMembers] = useState<{ employee: any; role: string }[]>([]);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editFieldErrors, setEditFieldErrors] = useState<{ name?: string; employees?: string; common?: string }>({});
+  const [editEmployeesModalOpen, setEditEmployeesModalOpen] = useState(false);
+  const [editCompanyUsers, setEditCompanyUsers] = useState<any[]>([]);
+  const [editUsersInTeams, setEditUsersInTeams] = useState<string[]>([]);
+
   useEffect(() => {
     if (status === "loading") return;
     fetch("/api/company/teams")
@@ -104,6 +115,24 @@ export default function TeamsPage() {
   };
   const closeAddTeamModal = () => setAddTeamModalOpen(false);
 
+  // Manage team modal logic
+  const openManageTeamModal = (team: Team) => {
+    setEditingTeam(team);
+    setEditName(team.name);
+    setEditTeamMembers(team.teamMembers.map(member => ({
+      employee: member.employee,
+      role: member.role
+    })));
+    setEditFieldErrors({});
+    setManageTeamModalOpen(true);
+  };
+  const closeManageTeamModal = () => {
+    setManageTeamModalOpen(false);
+    setEditingTeam(null);
+    setEditName("");
+    setEditTeamMembers([]);
+  };
+
   // Employee selection modal logic
   const fetchCompanyUsers = async () => {
     setUsersLoading(true);
@@ -132,6 +161,37 @@ export default function TeamsPage() {
       setUsersLoading(false);
     }
   };
+
+  const fetchEditCompanyUsers = async () => {
+    setUsersLoading(true);
+    setUsersError("");
+    try {
+      const [usersRes, teamsRes] = await Promise.all([
+        fetch("/api/company/users"),
+        fetch("/api/company/teams")
+      ]);
+      const usersData = await usersRes.json();
+      const teamsData = await teamsRes.json();
+      if (!usersRes.ok) throw new Error(usersData.error || "Failed to fetch users");
+      if (!teamsRes.ok) throw new Error(teamsData.message || "Failed to fetch teams");
+      setEditCompanyUsers(usersData.users);
+      // Collect all user IDs already in a team (excluding current team members)
+      const inTeams: string[] = [];
+      for (const team of teamsData.teams) {
+        if (team._id !== editingTeam?._id) {
+          for (const member of team.teamMembers) {
+            inTeams.push(member.employee._id);
+          }
+        }
+      }
+      setEditUsersInTeams(inTeams);
+    } catch (err: any) {
+      setUsersError(err.message || "Error fetching users");
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
   const openEmployeesModal = () => {
     setEmployeesModalOpen(true);
     if (companyUsers.length === 0) fetchCompanyUsers();
@@ -147,6 +207,30 @@ export default function TeamsPage() {
   };
   const handleRoleChange = (employeeId: string, newRole: string) => {
     setSelectedTeamMembers(prev => 
+      prev.map(member => 
+        member.employee._id === employeeId 
+          ? { ...member, role: newRole }
+          : member
+      )
+    );
+  };
+
+  // Edit team member functions
+  const openEditEmployeesModal = () => {
+    setEditEmployeesModalOpen(true);
+    if (editCompanyUsers.length === 0) fetchEditCompanyUsers();
+  };
+  const closeEditEmployeesModal = () => setEditEmployeesModalOpen(false);
+  const handleAddEditEmployee = (user: any) => {
+    if (!editTeamMembers.some((member) => member.employee._id === user._id)) {
+      setEditTeamMembers([...editTeamMembers, { employee: user, role: "General" }]);
+    }
+  };
+  const handleRemoveEditEmployee = (user: any) => {
+    setEditTeamMembers(editTeamMembers.filter((member) => member.employee._id !== user._id));
+  };
+  const handleEditRoleChange = (employeeId: string, newRole: string) => {
+    setEditTeamMembers(prev => 
       prev.map(member => 
         member.employee._id === employeeId 
           ? { ...member, role: newRole }
@@ -191,6 +275,57 @@ export default function TeamsPage() {
       return;
     }
     setAddTeamModalOpen(false);
+    // Refresh teams list
+    setLoading(true);
+    fetch("/api/company/teams")
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Failed to fetch teams");
+        const data: { teams: Team[] } = await res.json();
+        setTeams(data.teams);
+      })
+      .catch((err: unknown) => setError((err as Error).message))
+      .finally(() => setLoading(false));
+  };
+
+  const handleUpdateTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTeam) return;
+    
+    setEditFieldErrors({});
+    let hasError = false;
+    const newErrors: { name?: string; employees?: string; common?: string } = {};
+    if (!editName.trim()) {
+      newErrors.name = "Team name is required.";
+      hasError = true;
+    }
+    if (editTeamMembers.length === 0) {
+      newErrors.employees = "At least one employee is required.";
+      hasError = true;
+    }
+    if (hasError) {
+      setEditFieldErrors(newErrors);
+      return;
+    }
+    setEditLoading(true);
+    const res = await fetch("/api/company/teams", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        teamId: editingTeam._id,
+        name: editName,
+        teamMembers: editTeamMembers.map((member) => ({
+          employee: member.employee._id,
+          role: member.role,
+        })),
+      }),
+    });
+    setEditLoading(false);
+    const data = await res.json();
+    if (!res.ok) {
+      setEditFieldErrors({ common: data.message || "Something went wrong!" });
+      return;
+    }
+    setManageTeamModalOpen(false);
     // Refresh teams list
     setLoading(true);
     fetch("/api/company/teams")
@@ -262,13 +397,21 @@ export default function TeamsPage() {
                   )}
                 </td>
                 <td className="px-6 py-4">
-                  <button
-                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50 cursor-pointer"
-                    onClick={() => handleDeleteClick(team._id)}
-                    disabled={deletingId === team._id}
-                  >
-                    {deletingId === team._id ? "Deleting..." : "Delete"}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 cursor-pointer"
+                      onClick={() => openManageTeamModal(team)}
+                    >
+                      Manage
+                    </button>
+                    <button
+                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50 cursor-pointer"
+                      onClick={() => handleDeleteClick(team._id)}
+                      disabled={deletingId === team._id}
+                    >
+                      {deletingId === team._id ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -430,6 +573,161 @@ export default function TeamsPage() {
           </div>
         </Modal>
       </Modal>
+
+      {/* Manage Team Modal */}
+      <Modal show={manageTeamModalOpen} onClose={closeManageTeamModal} size="md" popup>
+        <div className="w-full max-w-lg mx-auto">
+          <Card className="w-full shadow-none bg-transparent! border-none">
+            <form onSubmit={handleUpdateTeam} className="space-y-4">
+              <h1 className="text-2xl font-bold text-center mb-4">Manage Team</h1>
+              {editFieldErrors.common && (
+                <Alert color="failure">{editFieldErrors.common}</Alert>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Team Name input */}
+                <div className="md:col-span-2">
+                  <Label htmlFor="editName" color={editFieldErrors.name ? "failure" : undefined}>Team Name</Label>
+                  <TextInput
+                    id="editName"
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    color={editFieldErrors.name ? "failure" : undefined}
+                    placeholder="Team Name"
+                  />
+                  {editFieldErrors.name && (
+                    <p className="text-red-500 text-xs mt-1">{editFieldErrors.name}</p>
+                  )}
+                </div>
+                {/* Team Members input */}
+                <div className="md:col-span-2">
+                  <Label color={editFieldErrors.employees ? "failure" : undefined}>Team Members</Label>
+                  <div className="space-y-2 mb-2">
+                    {editTeamMembers.map((member) => (
+                      <div key={member.employee._id} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded p-2">
+                        <span className="flex-1 text-sm">
+                          {member.employee.firstName} {member.employee.lastName}
+                        </span>
+                        <Select
+                          value={member.role}
+                          onChange={(e) => handleEditRoleChange(member.employee._id, e.target.value)}
+                          className="w-32"
+                        >
+                          {ROLE_OPTIONS.map((role) => (
+                            <option key={role} value={role}>
+                              {role}
+                            </option>
+                          ))}
+                        </Select>
+                        <button 
+                          type="button" 
+                          className="text-red-500 cursor-pointer" 
+                          onClick={() => handleRemoveEditEmployee(member.employee)}
+                          title="Remove"
+                        >
+                          <HiUserRemove />
+                        </button>
+                      </div>
+                    ))}
+                    <Button type="button" size="xs" color="alternative" onClick={openEditEmployeesModal} className="cursor-pointer">
+                      <HiUserAdd className="mr-1" /> Add members
+                    </Button>
+                  </div>
+                  {editFieldErrors.employees && (
+                    <p className="text-red-500 text-xs mt-1">{editFieldErrors.employees}</p>
+                  )}
+                </div>
+              </div>
+              <Button type="submit" color="blue" className="w-full cursor-pointer" disabled={editLoading}>
+                {editLoading ? (
+                  <><Spinner size="sm" aria-label="Loading" /> <span className="pl-2">Loading...</span></>
+                ) : (
+                  'Update Team'
+                )}
+              </Button>
+              <Button
+                onClick={closeManageTeamModal}
+                type="button"
+                color="red"
+                className="w-full cursor-pointer"
+                disabled={editLoading}
+              >
+                Cancel
+              </Button>
+            </form>
+          </Card>
+        </div>
+        {/* Edit Employee selection modal (nested) */}
+        <Modal show={editEmployeesModalOpen} onClose={closeEditEmployeesModal} size="lg" popup>
+          <div className="p-6 bg-white dark:bg-gray-900 rounded-lg">
+            <h3 className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-100">Select Team Members</h3>
+            {usersLoading ? (
+              <div className="text-center py-4 text-gray-700 dark:text-gray-200">Loading users...</div>
+            ) : usersError ? (
+              <div className="text-center text-red-500 py-4">{usersError}</div>
+            ) : (
+              <Table className="bg-white dark:bg-gray-800 rounded-lg relative overflow-hidden">
+                <TableHead className="bg-gray-100 dark:bg-gray-800 *:px-3">
+                  <tr>
+                    <TableHeadCell className="text-gray-700 dark:text-gray-200">First Name</TableHeadCell>
+                    <TableHeadCell className="text-gray-700 dark:text-gray-200">Last Name</TableHeadCell>
+                    <TableHeadCell className="text-gray-700 dark:text-gray-200">Email</TableHeadCell>
+                    <TableHeadCell className="text-gray-700 dark:text-gray-200">Add</TableHeadCell>
+                  </tr>
+                </TableHead>
+                <TableBody>
+                  {editCompanyUsers.map((user) => {
+                    const inTeam = editUsersInTeams.includes(user._id);
+                    const alreadySelected = editTeamMembers.some((member) => member.employee._id === user._id);
+                    return (
+                      <TableRow
+                        key={user._id}
+                        className={
+                          inTeam
+                            ? "bg-gray-200 dark:bg-gray-700 *:px-3"
+                            : alreadySelected
+                              ? "bg-green-100 dark:bg-green-900 *:px-3"
+                              : "hover:bg-gray-50 dark:hover:bg-gray-700 *:px-3"
+                        }
+                      >
+                        <TableCell className="text-gray-800 dark:text-gray-100">{user.firstName}</TableCell>
+                        <TableCell className="text-gray-800 dark:text-gray-100">{user.lastName}</TableCell>
+                        <TableCell className="text-gray-600 dark:text-gray-300">{user.email}</TableCell>
+                        <TableCell>
+                          <Button
+                            size="xs"
+                            className={
+                              inTeam
+                                ? "bg-gray-400 dark:bg-gray-600 text-white cursor-not-allowed"
+                                : alreadySelected
+                                  ? "bg-green-500 dark:bg-green-700 text-white cursor-pointer"
+                                  : "bg-blue-500 dark:bg-blue-700 text-white cursor-pointer"
+                            }
+                            disabled={inTeam || alreadySelected}
+                            onClick={() => handleAddEditEmployee(user)}
+                          >
+                            {inTeam ? "In a Team" : alreadySelected ? "Added" : "Add"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+            <div className="flex justify-end mt-4">
+              <Button
+                color="gray"
+                onClick={closeEditEmployeesModal}
+                className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-pointer"
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      </Modal>
+
       {/* Delete Team Modal (existing) */}
       <Modal show={modalOpen} onClose={handleCancelDelete} popup>
         <div className="text-center p-6">
