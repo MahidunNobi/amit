@@ -5,6 +5,7 @@ import dbConnect from "@/lib/db";
 import CompanyUser from "@/models/CompanyUser";
 import Company from "@/models/Company";
 import { authOptions } from "@/lib/authOptions";
+import mongoose from "mongoose";
 
 export async function GET() {
   await dbConnect();
@@ -21,7 +22,7 @@ export async function GET() {
   // Find teams that belong to this company
   const teams = await Team.find({ company: company._id })
     .sort({ createdAt: -1 })
-    .populate({ path: "employees", select: "firstName lastName email" });
+    .populate({ path: "teamMembers.employee", select: "firstName lastName email" });
   
   return NextResponse.json({ teams });
 }
@@ -39,27 +40,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Company not found" }, { status: 404 });
   }
   
-  const { name, employees } = await req.json();
+  const { name, teamMembers } = await req.json();
   if (!name) {
     return NextResponse.json(
       { message: "Team name is required" },
       { status: 400 }
     );
   }
-  if (!Array.isArray(employees) || employees.length === 0) {
+  if (!Array.isArray(teamMembers) || teamMembers.length === 0) {
     return NextResponse.json(
-      { message: "At least one employee is required" },
+      { message: "At least one team member is required" },
       { status: 400 }
     );
   }
   
+  // Validate teamMembers structure
+  for (const member of teamMembers) {
+    if (!member.employee || !member.role) {
+      return NextResponse.json(
+        { message: "Each team member must have an employee ID and role" },
+        { status: 400 }
+      );
+    }
+  }
+  
+  // Extract employee IDs for validation
+  const employeeIds = teamMembers.map((member: { employee: string; role: string }) => member.employee);
+  
   // Verify that all employees belong to this company
   const companyUsers = await CompanyUser.find({ 
-    _id: { $in: employees },
+    _id: { $in: employeeIds },
     company: company._id 
   });
   
-  if (companyUsers.length !== employees.length) {
+  if (companyUsers.length !== employeeIds.length) {
     return NextResponse.json(
       { message: "One or more employees do not belong to this company" },
       { status: 400 }
@@ -68,7 +82,7 @@ export async function POST(req: NextRequest) {
   
   // Check if any employee is already in a team
   const existingTeam = await Team.findOne({ 
-    employees: { $in: employees },
+    "teamMembers.employee": { $in: employeeIds },
     company: company._id 
   });
   if (existingTeam) {
@@ -80,14 +94,14 @@ export async function POST(req: NextRequest) {
   
   const team = await Team.create({
     name,
-    employees,
+    teamMembers,
     company: company._id,
   });
   
   // Update each employee's team information
   try {
     await CompanyUser.updateMany(
-      { _id: { $in: employees } },
+      { _id: { $in: employeeIds } },
       { $set: { team: name } }
     );
   } catch (error) {
@@ -135,9 +149,12 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ message: "Team not found" }, { status: 404 });
   }
   
+  // Extract employee IDs from team members
+  const employeeIds = team.teamMembers.map((member: { employee: mongoose.Types.ObjectId; role: string }) => member.employee);
+  
   // Remove team assignment from employees
   await CompanyUser.updateMany(
-    { _id: { $in: team.employees } },
+    { _id: { $in: employeeIds } },
     { $unset: { team: "" } }
   );
   
@@ -145,3 +162,4 @@ export async function DELETE(req: NextRequest) {
   await Team.findByIdAndDelete(teamId);
   return NextResponse.json({ message: "Team deleted successfully" });
 }
+

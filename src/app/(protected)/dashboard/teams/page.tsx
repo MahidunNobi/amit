@@ -1,5 +1,5 @@
 "use client";
-import { Label, TextInput, Button, Alert, Card, Spinner, Modal, Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell } from "flowbite-react";
+import { Label, TextInput, Button, Alert, Card, Spinner, Modal, Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell, Select } from "flowbite-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { HiUserAdd, HiUserRemove } from "react-icons/hi";
@@ -10,11 +10,27 @@ interface Employee {
   lastName: string;
   email: string;
 }
+
+interface TeamMember {
+  employee: Employee;
+  role: string;
+}
+
 interface Team {
   _id: string;
   name: string;
-  employees: Employee[];
+  teamMembers: TeamMember[];
 }
+
+const ROLE_OPTIONS = [
+  "General",
+  "Developer", 
+  "Project Manager",
+  "QA",
+  "Designer",
+  "Team Lead",
+  "Scrum Master"
+];
 
 export default function TeamsPage() {
   const { status } = useSession();
@@ -32,7 +48,7 @@ export default function TeamsPage() {
   const [fieldErrors, setFieldErrors] = useState<{ name?: string; employees?: string; common?: string }>({});
   const [employeesModalOpen, setEmployeesModalOpen] = useState(false);
   const [companyUsers, setCompanyUsers] = useState<any[]>([]);
-  const [selectedEmployees, setSelectedEmployees] = useState<any[]>([]);
+  const [selectedTeamMembers, setSelectedTeamMembers] = useState<{ employee: any; role: string }[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState("");
   const [usersInTeams, setUsersInTeams] = useState<string[]>([]);
@@ -83,7 +99,7 @@ export default function TeamsPage() {
   const openAddTeamModal = () => {
     setName("");
     setFieldErrors({});
-    setSelectedEmployees([]);
+    setSelectedTeamMembers([]);
     setAddTeamModalOpen(true);
   };
   const closeAddTeamModal = () => setAddTeamModalOpen(false);
@@ -105,8 +121,8 @@ export default function TeamsPage() {
       // Collect all user IDs already in a team
       const inTeams: string[] = [];
       for (const team of teamsData.teams) {
-        for (const emp of team.employees) {
-          inTeams.push(emp._id);
+        for (const member of team.teamMembers) {
+          inTeams.push(member.employee._id);
         }
       }
       setUsersInTeams(inTeams);
@@ -122,12 +138,21 @@ export default function TeamsPage() {
   };
   const closeEmployeesModal = () => setEmployeesModalOpen(false);
   const handleAddEmployee = (user: any) => {
-    if (!selectedEmployees.some((u) => u._id === user._id)) {
-      setSelectedEmployees([...selectedEmployees, user]);
+    if (!selectedTeamMembers.some((member) => member.employee._id === user._id)) {
+      setSelectedTeamMembers([...selectedTeamMembers, { employee: user, role: "General" }]);
     }
   };
   const handleRemoveEmployee = (user: any) => {
-    setSelectedEmployees(selectedEmployees.filter((u) => u._id !== user._id));
+    setSelectedTeamMembers(selectedTeamMembers.filter((member) => member.employee._id !== user._id));
+  };
+  const handleRoleChange = (employeeId: string, newRole: string) => {
+    setSelectedTeamMembers(prev => 
+      prev.map(member => 
+        member.employee._id === employeeId 
+          ? { ...member, role: newRole }
+          : member
+      )
+    );
   };
 
   const handleAddTeam = async (e: React.FormEvent) => {
@@ -139,7 +164,7 @@ export default function TeamsPage() {
       newErrors.name = "Team name is required.";
       hasError = true;
     }
-    if (selectedEmployees.length === 0) {
+    if (selectedTeamMembers.length === 0) {
       newErrors.employees = "At least one employee is required.";
       hasError = true;
     }
@@ -153,7 +178,10 @@ export default function TeamsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name,
-        employees: selectedEmployees.map((u) => u._id),
+        teamMembers: selectedTeamMembers.map((member) => ({
+          employee: member.employee._id,
+          role: member.role,
+        })),
       }),
     });
     setAddLoading(false);
@@ -197,7 +225,7 @@ export default function TeamsPage() {
                 Team Name
               </th>
               <th scope="col" className="px-6 py-3">
-                Employees
+                Members & Roles
               </th>
               <th scope="col" className="px-6 py-3">
                 Actions
@@ -217,19 +245,20 @@ export default function TeamsPage() {
                   {team.name}
                 </th>
                 <td className="px-6 py-4">
-                  {team.employees && team.employees.length > 0 ? (
+                  {team.teamMembers && team.teamMembers.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
-                      {team.employees.map((emp) => (
+                      {team.teamMembers.map((member) => (
                         <span
-                          key={emp._id}
+                          key={member.employee._id}
                           className="inline-block bg-blue-600 dark:bg-blue-800 text-white rounded px-2 py-1 text-xs"
+                          title={`${member.employee.firstName} ${member.employee.lastName} - ${member.role}`}
                         >
-                          {emp.firstName} {emp.lastName}
+                          {member.employee.firstName} {member.employee.lastName} ({member.role})
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <span className="text-gray-400">No employees</span>
+                    <span className="text-gray-400">No members</span>
                   )}
                 </td>
                 <td className="px-6 py-4">
@@ -272,21 +301,39 @@ export default function TeamsPage() {
                     <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>
                   )}
                 </div>
-                {/* Employees input */}
+                {/* Team Members input */}
                 <div className="md:col-span-2">
-                  {/* Team's employees */}
-                  <Label color={fieldErrors.employees ? "failure" : undefined}>Employees</Label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {selectedEmployees.map((user) => (
-                      <span key={user._id} className="flex items-center bg-gray-600 rounded px-2 py-1 text-xs">
-                        {user.firstName} {user.lastName}
-                        <button type="button" className="ml-1 text-red-500 cursor-pointer" onClick={() => handleRemoveEmployee(user)} title="Remove">
+                  {/* Team's members */}
+                  <Label color={fieldErrors.employees ? "failure" : undefined}>Team Members</Label>
+                  <div className="space-y-2 mb-2">
+                    {selectedTeamMembers.map((member) => (
+                      <div key={member.employee._id} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded p-2">
+                        <span className="flex-1 text-sm">
+                          {member.employee.firstName} {member.employee.lastName}
+                        </span>
+                        <Select
+                          value={member.role}
+                          onChange={(e) => handleRoleChange(member.employee._id, e.target.value)}
+                          className="w-32"
+                        >
+                          {ROLE_OPTIONS.map((role) => (
+                            <option key={role} value={role}>
+                              {role}
+                            </option>
+                          ))}
+                        </Select>
+                        <button 
+                          type="button" 
+                          className="text-red-500 cursor-pointer" 
+                          onClick={() => handleRemoveEmployee(member.employee)}
+                          title="Remove"
+                        >
                           <HiUserRemove />
                         </button>
-                      </span>
+                      </div>
                     ))}
                     <Button type="button" size="xs" color="alternative" onClick={openEmployeesModal} className="cursor-pointer">
-                      <HiUserAdd className="mr-1" /> Add employees
+                      <HiUserAdd className="mr-1" /> Add members
                     </Button>
                   </div>
                   {fieldErrors.employees && (
@@ -316,7 +363,7 @@ export default function TeamsPage() {
         {/* Employee selection modal (nested) */}
         <Modal show={employeesModalOpen} onClose={closeEmployeesModal} size="lg" popup>
           <div className="p-6 bg-white dark:bg-gray-900 rounded-lg">
-            <h3 className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-100">Select Employees</h3>
+            <h3 className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-100">Select Team Members</h3>
             {usersLoading ? (
               <div className="text-center py-4 text-gray-700 dark:text-gray-200">Loading users...</div>
             ) : usersError ? (
@@ -334,7 +381,7 @@ export default function TeamsPage() {
                 <TableBody>
                   {companyUsers.map((user) => {
                     const inTeam = usersInTeams.includes(user._id);
-                    const alreadySelected = selectedEmployees.some((u) => u._id === user._id);
+                    const alreadySelected = selectedTeamMembers.some((member) => member.employee._id === user._id);
                     return (
                       <TableRow
                         key={user._id}
