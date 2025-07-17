@@ -28,6 +28,7 @@ const DashboardSidebar = () => {
     >
       <SidebarItems>
         <SidebarItemGroup>
+          {/* -------------------Common routes all users----------- */}
           <SidebarItem as={Link} href="/dashboard" icon={HiHome}>
             Home
           </SidebarItem>
@@ -37,6 +38,7 @@ const DashboardSidebar = () => {
           <SidebarItem as={Link} href="/dashboard/settings" icon={HiCog}>
             Settings
           </SidebarItem>
+          {/* -------------------Company admin routes----------- */}
           {session?.accountType === "company" && (
             <>
               <SidebarItem as={Link} href="/dashboard/users" icon={HiUsers}>
@@ -50,6 +52,7 @@ const DashboardSidebar = () => {
               </SidebarItem>
             </>
           )}
+          {/* -------------------Company users routes----------- */}
           {session?.accountType === "user" && (
             <SidebarItem
               as={Link}
@@ -59,15 +62,17 @@ const DashboardSidebar = () => {
               Account
             </SidebarItem>
           )}
-          {session?.accountType === "user" && (
-            <SidebarItem
-              as={Link}
-              href="/dashboard/manager/manage-team"
-              icon={HiIdentification}
-            >
-              Manage Team
-            </SidebarItem>
-          )}
+          {/* -------------------Managers routes----------- */}
+          {session?.accountType === "user" &&
+            session?.user.role === "Project Manager" && (
+              <SidebarItem
+                as={Link}
+                href="/dashboard/manager/manage-team"
+                icon={HiIdentification}
+              >
+                Manage Team
+              </SidebarItem>
+            )}
           <SidebarItem
             as={"button"}
             onClick={handleSignOut}
