@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Spinner, Alert } from "flowbite-react";
+import AddTaskModal from "@/UIModels/AddTaskModel";
 
 interface TeamMember {
   _id: string;
@@ -11,6 +12,7 @@ interface TeamMember {
   lastName: string;
   email: string;
   role: string;
+  team_id: string;
 }
 
 export default function TeamMembersPage() {
@@ -19,6 +21,10 @@ export default function TeamMembersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
+  const [openModalForAddTask, setOpenModalForAddTask] = useState<{
+    member_id: string;
+    team_id: string;
+  } | null>();
 
   useEffect(() => {
     if (status === "loading") return;
@@ -34,7 +40,7 @@ export default function TeamMembersPage() {
           throw new Error(data.message || "Failed to fetch team members");
         }
         const data = await res.json();
-        console.log(data);
+
         setTeamMembers(
           data.teamMembers.map((tm: any) => ({
             _id: tm.employee._id,
@@ -42,6 +48,7 @@ export default function TeamMembersPage() {
             lastName: tm.employee.lastName,
             email: tm.employee.email,
             role: tm.role,
+            team_id: data.team_id,
           }))
         );
       })
@@ -75,6 +82,7 @@ export default function TeamMembersPage() {
               <th className="px-6 py-3">Name</th>
               <th className="px-6 py-3">Email</th>
               <th className="px-6 py-3">Role</th>
+              <th className="px-6 py-3"> Action</th>
             </tr>
           </thead>
           <tbody>
@@ -88,11 +96,30 @@ export default function TeamMembersPage() {
                 </td>
                 <td className="px-6 py-4">{member.email}</td>
                 <td className="px-6 py-4">{member.role}</td>
+                <td className="px-6 py-4">
+                  <button
+                    onClick={() =>
+                      setOpenModalForAddTask({
+                        member_id: member._id,
+                        team_id: member.team_id,
+                      })
+                    }
+                    className="px-3 py-1 bg-indigo-600 text-white rounded"
+                  >
+                    Add Task
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <AddTaskModal
+        show={Boolean(openModalForAddTask?.member_id)}
+        onClose={() => setOpenModalForAddTask(null)}
+        memberId={openModalForAddTask?.member_id || ""}
+        teamId={openModalForAddTask?.team_id || ""}
+      />
     </div>
   );
 }

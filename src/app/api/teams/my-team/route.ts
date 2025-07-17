@@ -22,7 +22,7 @@ export async function GET() {
     }
 
     const team = await Team.findOne({ "teamMembers.employee": user._id })
-      .populate("teamMembers.employee", "firstName lastName email role")
+      .populate("teamMembers.employee", "firstName lastName email role ")
       .lean<ITeam>();
 
     if (!team) {
@@ -30,7 +30,7 @@ export async function GET() {
     }
 
     return NextResponse.json(
-      { teamMembers: team.teamMembers },
+      { teamMembers: team.teamMembers, team_id: team._id },
       { status: 200 }
     );
   } catch (error) {
