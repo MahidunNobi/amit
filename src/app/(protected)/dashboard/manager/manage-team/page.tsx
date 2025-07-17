@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Spinner, Alert } from "flowbite-react";
 import AddTaskModal from "@/UIModels/AddTaskModel";
+import ManageTaskModel from "@/UIModels/ManageTaskModel";
 
 interface TeamMember {
   _id: string;
@@ -22,6 +23,10 @@ export default function TeamMembersPage() {
   const [error, setError] = useState("");
   const router = useRouter();
   const [openModalForAddTask, setOpenModalForAddTask] = useState<{
+    member_id: string;
+    team_id: string;
+  } | null>();
+  const [openModalForManageTask, setOpenModalForManageTask] = useState<{
     member_id: string;
     team_id: string;
   } | null>();
@@ -96,7 +101,18 @@ export default function TeamMembersPage() {
                 </td>
                 <td className="px-6 py-4">{member.email}</td>
                 <td className="px-6 py-4">{member.role}</td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 space-x-6">
+                  <button
+                    onClick={() =>
+                      setOpenModalForManageTask({
+                        member_id: member._id,
+                        team_id: member.team_id,
+                      })
+                    }
+                    className="bg-emerald-600 text-white px-3 py-1 rounded"
+                  >
+                    View Tasks
+                  </button>
                   <button
                     onClick={() =>
                       setOpenModalForAddTask({
@@ -120,6 +136,14 @@ export default function TeamMembersPage() {
         memberId={openModalForAddTask?.member_id || ""}
         teamId={openModalForAddTask?.team_id || ""}
       />
+      {openModalForManageTask?.member_id && (
+        <ManageTaskModel
+          show={Boolean(openModalForManageTask?.member_id)}
+          onClose={() => setOpenModalForManageTask(null)}
+          memberId={openModalForManageTask?.member_id || ""}
+          teamId={openModalForManageTask?.team_id || ""}
+        />
+      )}
     </div>
   );
 }
