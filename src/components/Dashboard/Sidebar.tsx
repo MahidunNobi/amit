@@ -41,13 +41,25 @@ const DashboardSidebar = () => {
           {/* -------------------Company admin routes----------- */}
           {session?.accountType === "company" && (
             <>
-              <SidebarItem as={Link} href="/dashboard/users" icon={HiUsers}>
+              <SidebarItem
+                as={Link}
+                href="/dashboard/admin/users"
+                icon={HiUsers}
+              >
                 Company Users
               </SidebarItem>
-              <SidebarItem as={Link} href="/dashboard/teams" icon={HiUsers}>
+              <SidebarItem
+                as={Link}
+                href="/dashboard/admin/teams"
+                icon={HiUsers}
+              >
                 Teams
               </SidebarItem>
-              <SidebarItem as={Link} href="/dashboard/projects" icon={HiCog}>
+              <SidebarItem
+                as={Link}
+                href="/dashboard/admin/projects"
+                icon={HiCog}
+              >
                 Company Projects
               </SidebarItem>
             </>
