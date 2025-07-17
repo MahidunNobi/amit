@@ -7,7 +7,6 @@ import {
 } from "flowbite-react";
 import {
   HiHome,
-  HiUser,
   HiCog,
   HiArrowSmRight,
   HiUsers,
@@ -31,9 +30,6 @@ const DashboardSidebar = () => {
           {/* -------------------Common routes all users----------- */}
           <SidebarItem as={Link} href="/dashboard" icon={HiHome}>
             Home
-          </SidebarItem>
-          <SidebarItem as={Link} href="/dashboard/profile" icon={HiUser}>
-            Profile
           </SidebarItem>
           <SidebarItem as={Link} href="/dashboard/settings" icon={HiCog}>
             Settings
