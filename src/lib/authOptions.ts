@@ -40,7 +40,7 @@ export const authOptions: AuthOptions = {
           const sessionToken = uuidv4();
           account.activeSessionToken = sessionToken;
           await account.save();
-
+          console.log(account);
           return {
             id: account._id.toString(),
             email: account.email,
@@ -50,6 +50,7 @@ export const authOptions: AuthOptions = {
                 : account.firstName + " " + account.lastName,
             sessionToken,
             accountType: account.accountType,
+            role: account.role,
           };
         }
 
@@ -119,6 +120,9 @@ export const authOptions: AuthOptions = {
         token.name = user.name;
         token.sessionToken = user.sessionToken;
         token.accountType = user.accountType;
+        if ("role" in user) {
+          token.role = (user as any).role; // 👈 Add this line
+        }
       }
 
       return token;
@@ -128,6 +132,7 @@ export const authOptions: AuthOptions = {
         session.user.name = token.name as string;
         session.sessionToken = token.sessionToken;
         session.accountType = token.accountType as string | null;
+        session.user.role = token.role as string;
       }
       return session;
     },
