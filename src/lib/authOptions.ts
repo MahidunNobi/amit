@@ -40,7 +40,6 @@ export const authOptions: AuthOptions = {
           const sessionToken = uuidv4();
           account.activeSessionToken = sessionToken;
           await account.save();
-          console.log(account);
           return {
             id: account._id.toString(),
             email: account.email,

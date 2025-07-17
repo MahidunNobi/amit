@@ -23,6 +23,15 @@ export async function middleware(request: NextRequest) {
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);
     }
+
+    // Restrict /dashboard/manager/** to company managers only
+    if (
+      url.pathname.startsWith("/dashboard/manager") &&
+      (token.accountType !== "user" || token.role !== "Project Manager")
+    ) {
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
   }
   return NextResponse.next();
 }
