@@ -1,6 +1,9 @@
+"use client";
+
 import { Modal, Card, TabItem, Tabs, Spinner, Button } from "flowbite-react";
 import { useEffect, useState } from "react";
-import { ITask } from "@/models/Task"; // Assuming this interface is exported from the Task model
+import { ITask } from "@/models/Task";
+import { HiArrowDown, HiArrowUp, HiMinus } from "react-icons/hi";
 
 type TaskProps = {
   show: boolean;
@@ -17,14 +20,10 @@ const ManageTaskModel: React.FC<TaskProps> = ({
 }) => {
   const [tasks, setTasks] = useState<ITask[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [selectedTab, setSelectedTab] = useState<"Low" | "Medium" | "High">(
-    "Medium"
+  const [selectedTab, setSelectedTab] = useState<"low" | "medium" | "high">(
+    "medium"
   );
-  console.log(memberId);
-  // Fetch tasks by priority
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-
-  // Load tasks when tab changes
+  console.log(selectedTab);
   useEffect(() => {
     const fetchTasks = async () => {
       setLoading(true);
@@ -47,14 +46,12 @@ const ManageTaskModel: React.FC<TaskProps> = ({
     fetchTasks();
   }, [selectedTab, memberId, teamId]);
 
-  // Task rendering
-  const renderTaskRow = (task: ITask, i: any) => (
-    <tr key={task._id || i}>
+  const renderTaskRow = (task: ITask, i: number) => (
+    <tr key={(task._id as string) || i}>
       <td className="px-6 py-4">{task.title}</td>
-      <td className="px-6 py-4">{task.status}</td>
+      <td className="px-6 py-4 capitalize">{task.status.replace("_", " ")}</td>
       <td className="px-6 py-4">
-        {/* {new Date(task.dueDate).toLocaleDateString()} */}
-        12-02-2023
+        {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A"}
       </td>
     </tr>
   );
@@ -67,64 +64,59 @@ const ManageTaskModel: React.FC<TaskProps> = ({
             <h2 className="text-2xl font-bold">Task Management</h2>
           </div>
 
-          <Tabs aria-label="Task Priority Tabs" className="underline">
-            {/* Tabs for task priority */}
-            <TabItem
-              title=" Low Priority s"
-              active={selectedTab === "Low"}
-              onClick={() => setSelectedTab("Low")}
-            >
-              Low Priority
-            </TabItem>
-            <TabItem
-              title="Medium Priority"
-              active={selectedTab === "Medium"}
-              onClick={() => setSelectedTab("Medium")}
-            >
-              Medium Priority
-            </TabItem>
-            <TabItem
-              title="High Priority"
-              active={selectedTab === "High"}
-              onClick={() => setSelectedTab("High")}
-            >
-              High Priority
-            </TabItem>
+          <Tabs
+            // aria-label="Task Priority Tabs"
+            className="underline"
+            variant="underline"
+            aria-label="Tabs with underline"
+            // variant="underline"
+            onActiveTabChange={(tab) => {
+              if (tab === 0) setSelectedTab("low");
+              if (tab === 1) setSelectedTab("medium");
+              if (tab === 2) setSelectedTab("high");
+            }}
+          >
+            {["Low Priority", "Medium Priority", "High Priority"].map(
+              (tem, i) => (
+                <TabItem key={i} title={tem}>
+                  <div className="mt-4">
+                    {loading ? (
+                      <div className="flex justify-center">
+                        <Spinner />
+                      </div>
+                    ) : (
+                      <table className="min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                          <tr>
+                            <th className="px-6 py-3">Task Name</th>
+                            <th className="px-6 py-3">Status</th>
+                            <th className="px-6 py-3">Due Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tasks.length > 0 ? (
+                            tasks.map((task, i) => renderTaskRow(task, i))
+                          ) : (
+                            <tr>
+                              <td colSpan={3} className="px-6 py-4 text-center">
+                                No tasks available.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+                </TabItem>
+              )
+            )}
           </Tabs>
 
-          <div className="mt-4">
-            {loading ? (
-              <div className="flex justify-center">
-                <Spinner />
-              </div>
-            ) : (
-              <table className="min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                  <tr>
-                    <th className="px-6 py-3">Task Name</th>
-                    <th className="px-6 py-3">Status</th>
-                    <th className="px-6 py-3">Due Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tasks.length > 0 ? (
-                    tasks.map((task, i) => renderTaskRow(task, i))
-                  ) : (
-                    <tr>
-                      <td colSpan={3} className="px-6 py-4 text-center">
-                        No tasks available.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
           <Button
             onClick={onClose}
             type="button"
             color="red"
-            className="w-full"
+            className="w-full mt-4"
           >
             Close
           </Button>
@@ -135,3 +127,48 @@ const ManageTaskModel: React.FC<TaskProps> = ({
 };
 
 export default ManageTaskModel;
+
+type TaskTableTabProps = {
+  title: string;
+  tasks: ITask[];
+  loading: boolean;
+  renderTaskRow: (task: ITask, index: number) => React.ReactNode;
+};
+
+const TaskTableTab: React.FC<TaskTableTabProps> = ({
+  title,
+  tasks,
+  loading,
+  renderTaskRow,
+}) => (
+  <TabItem title={title}>
+    <div className="mt-4">
+      {loading ? (
+        <div className="flex justify-center">
+          <Spinner />
+        </div>
+      ) : (
+        <table className="min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th className="px-6 py-3">Task Name</th>
+              <th className="px-6 py-3">Status</th>
+              <th className="px-6 py-3">Due Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tasks.length > 0 ? (
+              tasks.map((task, i) => renderTaskRow(task, i))
+            ) : (
+              <tr>
+                <td colSpan={3} className="px-6 py-4 text-center">
+                  No tasks available.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      )}
+    </div>
+  </TabItem>
+);

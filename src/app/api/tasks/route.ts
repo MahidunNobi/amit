@@ -75,11 +75,10 @@ export async function GET(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
-
     const tasks = await Task.find({
       teamId,
       assignedTo: memberId,
-      priority: priority, // assuming priority stored as "low" | "medium" | "high"
+      priority: new RegExp(`^${priority}$`, "i"), // assuming priority stored as "low" | "medium" | "high"
       createdBy: user._id,
     }).sort({ dueDate: 1 });
 
