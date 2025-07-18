@@ -1,9 +1,8 @@
 "use client";
 
-import { Modal, Card, TabItem, Tabs, Spinner, Button } from "flowbite-react";
-import { useEffect, useState } from "react";
 import { ITask } from "@/models/Task";
-import { HiArrowDown, HiArrowUp, HiMinus } from "react-icons/hi";
+import { Button, Card, Modal, Spinner, TabItem, Tabs } from "flowbite-react";
+import { useEffect, useState } from "react";
 
 type TaskProps = {
   show: boolean;
@@ -21,9 +20,8 @@ const ManageTaskModel: React.FC<TaskProps> = ({
   const [tasks, setTasks] = useState<ITask[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedTab, setSelectedTab] = useState<"low" | "medium" | "high">(
-    "medium"
+    "low"
   );
-  console.log(selectedTab);
   useEffect(() => {
     const fetchTasks = async () => {
       setLoading(true);
@@ -45,7 +43,7 @@ const ManageTaskModel: React.FC<TaskProps> = ({
     };
     fetchTasks();
   }, [selectedTab, memberId, teamId]);
-
+  console.log(selectedTab);
   const renderTaskRow = (task: ITask, i: number) => (
     <tr key={(task._id as string) || i}>
       <td className="px-6 py-4">{task.title}</td>
@@ -65,11 +63,8 @@ const ManageTaskModel: React.FC<TaskProps> = ({
           </div>
 
           <Tabs
-            // aria-label="Task Priority Tabs"
-            className="underline"
-            variant="underline"
-            aria-label="Tabs with underline"
-            // variant="underline"
+            aria-label="Default tabs"
+            variant="default"
             onActiveTabChange={(tab) => {
               if (tab === 0) setSelectedTab("low");
               if (tab === 1) setSelectedTab("medium");
@@ -78,7 +73,11 @@ const ManageTaskModel: React.FC<TaskProps> = ({
           >
             {["Low Priority", "Medium Priority", "High Priority"].map(
               (tem, i) => (
-                <TabItem key={i} title={tem}>
+                <TabItem
+                  key={i}
+                  title={tem}
+                  // className="cursor-pointer"
+                >
                   <div className="mt-4">
                     {loading ? (
                       <div className="flex justify-center">
@@ -116,7 +115,7 @@ const ManageTaskModel: React.FC<TaskProps> = ({
             onClick={onClose}
             type="button"
             color="red"
-            className="w-full mt-4"
+            className="w-full mt-4 cursor-pointer"
           >
             Close
           </Button>
@@ -127,48 +126,3 @@ const ManageTaskModel: React.FC<TaskProps> = ({
 };
 
 export default ManageTaskModel;
-
-type TaskTableTabProps = {
-  title: string;
-  tasks: ITask[];
-  loading: boolean;
-  renderTaskRow: (task: ITask, index: number) => React.ReactNode;
-};
-
-const TaskTableTab: React.FC<TaskTableTabProps> = ({
-  title,
-  tasks,
-  loading,
-  renderTaskRow,
-}) => (
-  <TabItem title={title}>
-    <div className="mt-4">
-      {loading ? (
-        <div className="flex justify-center">
-          <Spinner />
-        </div>
-      ) : (
-        <table className="min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-              <th className="px-6 py-3">Task Name</th>
-              <th className="px-6 py-3">Status</th>
-              <th className="px-6 py-3">Due Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tasks.length > 0 ? (
-              tasks.map((task, i) => renderTaskRow(task, i))
-            ) : (
-              <tr>
-                <td colSpan={3} className="px-6 py-4 text-center">
-                  No tasks available.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      )}
-    </div>
-  </TabItem>
-);
