@@ -77,7 +77,9 @@ export default function MyTasksPage() {
                     {task.title}
                   </TableCell>
                   <TableCell>{task.status}</TableCell>
-                  <TableCell className="capitalize">{task.priority}</TableCell>
+                  <TableCell className="capitalize">
+                    {getPriorityBadge(task.priority)}
+                  </TableCell>
                   <TableCell>
                     {new Date(task.dueDate).toLocaleDateString()}
                   </TableCell>
@@ -98,3 +100,35 @@ export default function MyTasksPage() {
     </div>
   );
 }
+
+const getPriorityBadge = (priority: string) => {
+  const baseClass =
+    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
+  switch (priority.toLowerCase()) {
+    case "high":
+      return (
+        <span
+          className={`${baseClass} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300`}
+        >
+          High
+        </span>
+      );
+    case "medium":
+      return (
+        <span
+          className={`${baseClass} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300`}
+        >
+          Medium
+        </span>
+      );
+    case "low":
+    default:
+      return (
+        <span
+          className={`${baseClass} bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300`}
+        >
+          Low
+        </span>
+      );
+  }
+};
