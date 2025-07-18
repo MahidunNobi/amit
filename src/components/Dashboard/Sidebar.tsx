@@ -81,6 +81,17 @@ const DashboardSidebar = () => {
                 Manage Team
               </SidebarItem>
             )}
+          {/* -------------------Employee routes----------- */}
+          {session?.accountType === "user" &&
+            session?.user.role !== "Project Manager" && (
+              <SidebarItem
+                as={Link}
+                href="/dashboard/my-task"
+                icon={HiIdentification}
+              >
+                My Task
+              </SidebarItem>
+            )}
           <SidebarItem
             as={"button"}
             onClick={handleSignOut}
