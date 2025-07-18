@@ -45,6 +45,28 @@ export default function MyTasksPage() {
     fetchTasks();
   }, []);
 
+  const handleStatusChange = async (taskId: string, newStatus: string) => {
+    try {
+      const res = await fetch(`/api/my-tasks/${taskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update status");
+      const updatedTask = await res.json();
+
+      setTasks((prev) =>
+        prev.map((task) =>
+          task._id === updatedTask._id
+            ? { ...task, status: updatedTask.status }
+            : task
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
   return (
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-4">My Assigned Tasks</h1>
@@ -59,9 +81,9 @@ export default function MyTasksPage() {
             <TableHead>
               <TableRow>
                 <TableHeadCell>Task Name</TableHeadCell>
-                <TableHeadCell>Status</TableHeadCell>
                 <TableHeadCell>Priority</TableHeadCell>
                 <TableHeadCell>Due Date</TableHeadCell>
+                <TableHeadCell>Status</TableHeadCell>
                 <TableHeadCell>
                   <span className="sr-only">View</span>
                 </TableHeadCell>
@@ -76,12 +98,24 @@ export default function MyTasksPage() {
                   <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                     {task.title}
                   </TableCell>
-                  <TableCell>{task.status}</TableCell>
                   <TableCell className="capitalize">
                     {getPriorityBadge(task.priority)}
                   </TableCell>
                   <TableCell>
                     {new Date(task.dueDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <select
+                      value={task.status}
+                      onChange={(e) =>
+                        handleStatusChange(task._id, e.target.value)
+                      }
+                      className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-sm rounded px-2 py-1"
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Completed">Completed</option>
+                    </select>
                   </TableCell>
                   <TableCell>
                     <a
