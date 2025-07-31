@@ -8,9 +8,10 @@ import CompanyUser from "@/models/CompanyUser";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const paramsAll = await params;
     const session = await getServerSession(authOptions);
     if (!session)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -25,7 +26,7 @@ export async function PUT(
     const { status } = body;
 
     const updatedTask = await Task.findOneAndUpdate(
-      { _id: params.id, assignedTo: user._id }, // only allow user to update their own tasks
+      { _id: paramsAll.id, assignedTo: user._id }, // only allow user to update their own tasks
       { status },
       { new: true }
     );

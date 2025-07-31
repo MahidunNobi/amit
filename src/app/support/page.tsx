@@ -33,7 +33,7 @@ export default function SupportPage() {
       <h1 className="text-2xl font-bold mb-4 text-black dark:text-white">
         🤖 AI Chat Support
       </h1>
-      <div className="space-y-3 mb-4 max-h-[400px] overflow-y-auto">
+      <div className="space-y-3 mb-4 overflow-y-auto">
         {messages.map((msg, idx) => (
           <div
             key={idx}
