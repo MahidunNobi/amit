@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Modal, Button } from "flowbite-react";
+import DashboardChart from "./DashboardChart";
 
 type Stats = {
   assignedCount: number;
@@ -12,12 +13,18 @@ type Stats = {
   completedCount: number;
   pendingCount: number;
 };
+const defaultStats = {
+  createdCount: 0,
+  assignedCount: 0,
+  completedCount: 0,
+  pendingCount: 0,
+};
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [showModal, setShowModal] = useState(false);
   const [timer, setTimer] = useState(120);
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<Stats | null>(defaultStats);
   const inactivityTimeout = useRef<NodeJS.Timeout | null>(null);
   const countdownInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -77,6 +84,7 @@ export default function Dashboard() {
       try {
         const res = await fetch("/api/dashboard-stats");
         const data = await res.json();
+        console.log(data);
         setStats(data);
       } catch (err) {
         console.error("Failed to load stats:", err);
@@ -86,109 +94,148 @@ export default function Dashboard() {
   }, [status]);
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
+    // <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+    //   <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+    //     <Image
+    //       className="dark:invert"
+    //       src="/next.svg"
+    //       alt="Next.js logo"
+    //       width={180}
+    //       height={38}
+    //       priority
+    //     />
 
-        {status === "loading" && <p>Loading...</p>}
+    //     {status === "loading" && <p>Loading...</p>}
 
-        {status === "authenticated" && (
-          <div>
-            <p className="text-center sm:text-left text-gray-800 dark:text-gray-200">
-              Signed in as {session?.user?.name}
-            </p>
+    //     {status === "authenticated" && (
+    //       <div>
+    //         <p className="text-center sm:text-left text-gray-800 dark:text-gray-200">
+    //           Signed in as {session?.user?.name}
+    //         </p>
 
-            <button
-              onClick={() => signOut()}
-              className="mt-4 rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto cursor-pointer"
-            >
-              Sign out
-            </button>
+    //         <button
+    //           onClick={() => signOut()}
+    //           className="mt-4 rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto cursor-pointer"
+    //         >
+    //           Sign out
+    //         </button>
 
-            {/* 📊 Dashboard Stats */}
-            {stats && (
-              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full">
-                <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center">
-                  <h4 className="text-gray-500 dark:text-gray-300">
-                    Tasks Created
-                  </h4>
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {stats.createdCount}
-                  </p>
-                </div>
-                <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center">
-                  <h4 className="text-gray-500 dark:text-gray-300">
-                    Assigned to You
-                  </h4>
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {stats.assignedCount}
-                  </p>
-                </div>
-                <div className="p-4 bg-green-100 dark:bg-green-900 rounded-lg shadow-md text-center">
-                  <h4 className="text-green-700 dark:text-green-300">
-                    Completed
-                  </h4>
-                  <p className="text-2xl font-semibold text-green-800 dark:text-green-100">
-                    {stats.completedCount}
-                  </p>
-                </div>
-                <div className="p-4 bg-yellow-100 dark:bg-yellow-900 rounded-lg shadow-md text-center">
-                  <h4 className="text-yellow-700 dark:text-yellow-300">
-                    Pending
-                  </h4>
-                  <p className="text-2xl font-semibold text-yellow-800 dark:text-yellow-100">
-                    {stats.pendingCount}
-                  </p>
-                </div>
-              </div>
-            )}
+    //         {/* 📊 Dashboard Stats */}
+    //         {stats && (
+    //           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full">
+    //             <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center">
+    //               <h4 className="text-gray-500 dark:text-gray-300">
+    //                 Tasks Created
+    //               </h4>
+    //               <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+    //                 {stats.createdCount}
+    //               </p>
+    //             </div>
+    //             <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center">
+    //               <h4 className="text-gray-500 dark:text-gray-300">
+    //                 Assigned to You
+    //               </h4>
+    //               <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+    //                 {stats.assignedCount}
+    //               </p>
+    //             </div>
+    //             <div className="p-4 bg-green-100 dark:bg-green-900 rounded-lg shadow-md text-center">
+    //               <h4 className="text-green-700 dark:text-green-300">
+    //                 Completed
+    //               </h4>
+    //               <p className="text-2xl font-semibold text-green-800 dark:text-green-100">
+    //                 {stats.completedCount}
+    //               </p>
+    //             </div>
+    //             <div className="p-4 bg-yellow-100 dark:bg-yellow-900 rounded-lg shadow-md text-center">
+    //               <h4 className="text-yellow-700 dark:text-yellow-300">
+    //                 Pending
+    //               </h4>
+    //               <p className="text-2xl font-semibold text-yellow-800 dark:text-yellow-100">
+    //                 {stats.pendingCount}
+    //               </p>
+    //             </div>
+    //           </div>
+    //         )}
+    //       </div>
+    //     )}
+
+    //     {status === "unauthenticated" && (
+    //       <div>
+    //         <p className="text-center sm:text-left text-gray-800 dark:text-gray-200">
+    //           Not signed in
+    //         </p>
+
+    //         <Link href="/login">
+    //           <span className="mt-4 rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto cursor-pointer">
+    //             Sign in
+    //           </span>
+    //         </Link>
+    //       </div>
+    //     )}
+    //   </main>
+    //   <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+    //     <p>Authentication example</p>
+    //   </footer>
+
+    //   <Modal show={showModal} onClose={handleNo} size="md" popup>
+    //     <div className="text-center p-6">
+    //       <h3 className="mb-4 text-lg font-normal text-gray-700 dark:text-gray-200">
+    //         Are you there?
+    //       </h3>
+    //       <p className="mb-4 text-gray-500 dark:text-gray-400">
+    //         You will be logged out in <span className="font-bold">{timer}</span>{" "}
+    //         seconds.
+    //       </p>
+    //       <div className="flex justify-center gap-4">
+    //         <Button color="success" onClick={handleYes}>
+    //           Yes
+    //         </Button>
+    //         <Button color="failure" onClick={handleNo}>
+    //           No
+    //         </Button>
+    //       </div>
+    //     </div>
+    //   </Modal>
+    // </div>
+    <div>
+      <div>
+        {/* 📊 Dashboard Stats */}
+        {stats && (
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full">
+            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center">
+              <h4 className="text-gray-500 dark:text-gray-300">
+                Tasks Created
+              </h4>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {stats.createdCount}
+              </p>
+            </div>
+            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center">
+              <h4 className="text-gray-500 dark:text-gray-300">
+                Assigned to You
+              </h4>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {stats.assignedCount}
+              </p>
+            </div>
+            <div className="p-4 bg-green-100 dark:bg-green-900 rounded-lg shadow-md text-center">
+              <h4 className="text-green-700 dark:text-green-300">Completed</h4>
+              <p className="text-2xl font-semibold text-green-800 dark:text-green-100">
+                {stats.completedCount}
+              </p>
+            </div>
+            <div className="p-4 bg-yellow-100 dark:bg-yellow-900 rounded-lg shadow-md text-center">
+              <h4 className="text-yellow-700 dark:text-yellow-300">Pending</h4>
+              <p className="text-2xl font-semibold text-yellow-800 dark:text-yellow-100">
+                {stats.pendingCount}
+              </p>
+            </div>
           </div>
         )}
+      </div>
 
-        {status === "unauthenticated" && (
-          <div>
-            <p className="text-center sm:text-left text-gray-800 dark:text-gray-200">
-              Not signed in
-            </p>
-
-            <Link href="/login">
-              <span className="mt-4 rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto cursor-pointer">
-                Sign in
-              </span>
-            </Link>
-          </div>
-        )}
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <p>Authentication example</p>
-      </footer>
-
-      <Modal show={showModal} onClose={handleNo} size="md" popup>
-        <div className="text-center p-6">
-          <h3 className="mb-4 text-lg font-normal text-gray-700 dark:text-gray-200">
-            Are you there?
-          </h3>
-          <p className="mb-4 text-gray-500 dark:text-gray-400">
-            You will be logged out in <span className="font-bold">{timer}</span>{" "}
-            seconds.
-          </p>
-          <div className="flex justify-center gap-4">
-            <Button color="success" onClick={handleYes}>
-              Yes
-            </Button>
-            <Button color="failure" onClick={handleNo}>
-              No
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      <DashboardChart stats={stats} />
     </div>
   );
 }
