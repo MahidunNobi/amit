@@ -1,10 +1,7 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
-import Link from "next/link";
-import Image from "next/image";
+import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
-import { Modal, Button } from "flowbite-react";
 import DashboardChart from "./DashboardChart";
 
 type Stats = {
@@ -41,7 +38,7 @@ export default function Dashboard() {
       }, 1000);
     }, 60 * 1000);
   };
-
+  console.log(session);
   useEffect(() => {
     if (status !== "authenticated") return;
     resetInactivityTimer();
@@ -65,18 +62,18 @@ export default function Dashboard() {
     }
   }, [timer, showModal]);
 
-  const handleYes = () => {
-    setShowModal(false);
-    setTimer(120);
-    resetInactivityTimer();
-    if (countdownInterval.current) clearInterval(countdownInterval.current);
-  };
+  // const handleYes = () => {
+  //   setShowModal(false);
+  //   setTimer(120);
+  //   resetInactivityTimer();
+  //   if (countdownInterval.current) clearInterval(countdownInterval.current);
+  // };
 
-  const handleNo = () => {
-    setShowModal(false);
-    if (countdownInterval.current) clearInterval(countdownInterval.current);
-    signOut({ callbackUrl: "/login" });
-  };
+  // const handleNo = () => {
+  //   setShowModal(false);
+  //   if (countdownInterval.current) clearInterval(countdownInterval.current);
+  //   signOut({ callbackUrl: "/login" });
+  // };
 
   // 📊 Fetch dashboard stats
   useEffect(() => {
